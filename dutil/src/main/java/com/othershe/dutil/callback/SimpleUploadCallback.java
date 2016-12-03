@@ -1,9 +1,7 @@
 package com.othershe.dutil.callback;
 
-import java.io.File;
 
-public abstract class SimpleDownloadCallback implements DownloadCallback {
-
+public abstract class SimpleUploadCallback implements UploadCallback {
     @Override
     public void onStart() {
 
@@ -20,7 +18,7 @@ public abstract class SimpleDownloadCallback implements DownloadCallback {
     }
 
     @Override
-    public void onFinish(File file) {
+    public void onFinish() {
 
     }
 
