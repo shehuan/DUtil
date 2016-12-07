@@ -1,5 +1,7 @@
 package com.othershe.dutil.service;
 
+import android.support.annotation.NonNull;
+
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadFactory;
@@ -14,19 +16,19 @@ public class ThreadPool {
     private static final int CORE_POOL_SIZE = CPU_COUNT + 1;
     //最大线程数
     private static final int MAXIMUM_POOL_SIZE = 2 * CPU_COUNT + 1;
-    //非核心线程闲置的超时时间，如果超时则会被回收
+    //非核心线程闲置的超时时间（秒），如果超时则会被回收
     private static final long KEEP_ALIVE = 10L;
 
     private static final ThreadFactory sThreadFactory = new ThreadFactory() {
         private final AtomicInteger mCount = new AtomicInteger();
 
         @Override
-        public Thread newThread(Runnable runnable) {
+        public Thread newThread(@NonNull Runnable runnable) {
             return new Thread(runnable, "download#" + mCount.getAndIncrement());
         }
     };
 
-    public static final Executor THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(
+    public static final ThreadPoolExecutor THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(
             CORE_POOL_SIZE,
             MAXIMUM_POOL_SIZE,
             KEEP_ALIVE, TimeUnit.SECONDS,

@@ -1,5 +1,6 @@
 package com.othershe.dutil.net;
 
+import com.othershe.dutil.callback.DownloadCallback;
 import com.othershe.dutil.callback.FileCallback;
 import com.othershe.dutil.download.FileUtil;
 
@@ -21,11 +22,11 @@ public class OkHttpManager {
 
     private OkHttpManager() {
         okHttpClient = new OkHttpClient.Builder()
-                .addNetworkInterceptor(getInterceptor())
+//                .addNetworkInterceptor(getInterceptor())
                 .build();
     }
 
-    public static OkHttpManager getInatance() {
+    public static OkHttpManager getInstance() {
         return OkHttpHolder.instance;
     }
 
@@ -33,28 +34,31 @@ public class OkHttpManager {
         private static final OkHttpManager instance = new OkHttpManager();
     }
 
-    public void initRequest(String url, final String path, final String name, FileCallback fileCallback) {
+    public void initRequest(String url, long startPoints, long end, final Callback callback) {
         this.url = url;
         this.path = path;
         this.name = name;
-        this.fileCallback = fileCallback;
+
+        Request request = new Request.Builder()
+                .url(url)
+                .header("RANGE", "bytes=" + startPoints + "-" + end)
+                .build();
+
+        Call call = okHttpClient.newCall(request);
+        call.enqueue(callback);
+    }
+
+    public void initRequest(String url, final Callback callback) {
+        this.url = url;
+        this.path = path;
+        this.name = name;
 
         Request request = new Request.Builder()
                 .url(url)
                 .build();
 
         Call call = okHttpClient.newCall(request);
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                FileUtil.saveFile(response, 0, path, name);
-            }
-        });
+        call.enqueue(callback);
     }
 
     private Interceptor getInterceptor() {

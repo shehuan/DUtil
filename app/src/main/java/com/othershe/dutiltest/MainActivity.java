@@ -22,40 +22,40 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+//
+//        Intent intent = new Intent(this, DownloadService.class);
+//        startService(intent);
 
-        Intent intent = new Intent(this, DownloadService.class);
-        startService(intent);
+        DUtil.initDownload(MainActivity.this)
+                .url("http://download.apk8.com/d2/soft/bohe.apk")
+                .path(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath())
+                .name("test001.apk")
+                .build()
+                .execute(new DownloadCallback() {
+                    @Override
+                    public void onStart() {
 
-//        DUtil.initDownload()
-//                .url("http://pro-app-mt.fir.im/876bb1c3213ea9f80ff6892fa75831fb6349f9ce.apk?AWSAccessKeyId=e0cada7f00f2465b929656d799937873&Expires=1480780164&Signature=Mhf0W%2FWKMueLxRFMeXzZldv%2FmWE%3D&filename=eds14.apk_2.0.apk")
-//                .path(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath())
-//                .name("test.apk")
-//                .build()
-//                .execute(new DownloadCallback() {
-//                    @Override
-//                    public void onStart() {
-//
-//                    }
-//
-//                    @Override
-//                    public void onProgress(long currentSize, long totalSize, int progress) {
-//                        Log.e(TAG, "onProgress: " + progress);
-//                    }
-//
-//                    @Override
-//                    public void onPause() {
-//
-//                    }
-//
-//                    @Override
-//                    public void onFinish(File file) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onError(String error) {
-//
-//                    }
-//                });
+                    }
+
+                    @Override
+                    public void onProgress(long currentSize, long totalSize, int progress) {
+                        Log.e(TAG, "onProgress: " + progress);
+                    }
+
+                    @Override
+                    public void onPause() {
+
+                    }
+
+                    @Override
+                    public void onFinish(File file) {
+
+                    }
+
+                    @Override
+                    public void onError(String error) {
+
+                    }
+                });
     }
 }

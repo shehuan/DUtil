@@ -1,5 +1,7 @@
 package com.othershe.dutil;
 
+import android.content.Context;
+
 import com.othershe.dutil.download.DBuilder;
 
 public class DUtil {
@@ -14,8 +16,8 @@ public class DUtil {
 //        private static final DUtil instance = new DUtil();
 //    }
 
-    public static DBuilder initDownload() {
-        return new DBuilder();
+    public static DBuilder initDownload(Context context) {
+        return new DBuilder(context);
     }
 
 //    public void download() {
