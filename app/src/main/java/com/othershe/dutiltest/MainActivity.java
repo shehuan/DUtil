@@ -14,9 +14,17 @@ import com.othershe.dutil.download.DownloadManger;
 import com.othershe.dutil.service.DownloadService;
 
 import java.io.File;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
+
+    /**
+     * https://gdl.25pp.com/wm/8/24/com.yunchang.buliangren.uc_9981432_1802333051c8.apk
+     * https://gdl.25pp.com/s/2/2/20160912113718937754_tcsdzz_1473311582981.apk
+     * http://download.apk8.com/d2/soft/bohe.apk
+     * @param savedInstanceState
+     */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         DUtil.initDownload(MainActivity.this)
                 .url("http://download.apk8.com/d2/soft/bohe.apk")
                 .path(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath())
-                .name("test001.apk")
+                .name("test1.apk")
                 .build()
                 .execute(new DownloadCallback() {
                     @Override
@@ -57,5 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 });
+
+        Log.e(TAG, "onCreate: " + new Date().getTime());
     }
 }

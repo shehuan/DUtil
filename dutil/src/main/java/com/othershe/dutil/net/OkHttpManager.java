@@ -8,10 +8,12 @@ import java.io.IOException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.Headers;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.internal.http2.Header;
 
 public class OkHttpManager {
     private OkHttpClient okHttpClient;
@@ -34,14 +36,14 @@ public class OkHttpManager {
         private static final OkHttpManager instance = new OkHttpManager();
     }
 
-    public void initRequest(String url, long startPoints, long end, final Callback callback) {
+    public void initRequest(String url, long start, long end, final Callback callback) {
         this.url = url;
         this.path = path;
         this.name = name;
 
         Request request = new Request.Builder()
                 .url(url)
-                .header("RANGE", "bytes=" + startPoints + "-" + end)
+                .header("RANGE", "bytes=" + start + "-" + end)
                 .build();
 
         Call call = okHttpClient.newCall(request);
@@ -55,6 +57,7 @@ public class OkHttpManager {
 
         Request request = new Request.Builder()
                 .url(url)
+                .header("RANGE", "bytes=0-")
                 .build();
 
         Call call = okHttpClient.newCall(request);
