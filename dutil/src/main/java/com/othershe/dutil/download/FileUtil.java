@@ -2,6 +2,8 @@ package com.othershe.dutil.download;
 
 import android.util.Log;
 
+import com.othershe.dutil.data.Ranges;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,52 +12,16 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 
 import static java.nio.channels.FileChannel.MapMode.READ_WRITE;
 
 public class FileUtil {
 
     private static int EACH_TEMP_SIZE = 16; //long + long = 8 + 8
-    private static int THREAD_COUNT = 1;
+    private static int THREAD_COUNT = 3;
     private static int TEMP_FILE_TOTAL_SIZE = EACH_TEMP_SIZE * THREAD_COUNT;
 
-    public static void saveFile(Response response, long startsPoint, String path, String name) {
-        ResponseBody body = response.body();
-        InputStream in = body.byteStream();
-        FileChannel channelOut = null;
-        // 随机访问文件，可以指定断点续传的起始位置
-        RandomAccessFile randomAccessFile = null;
-        try {
-            randomAccessFile = new RandomAccessFile(new File(path, name), "rwd");
-            //Chanel NIO中的用法，由于RandomAccessFile没有使用缓存策略，直接使用会使得下载速度变慢，亲测缓存下载3.3秒的文件，用普通的RandomAccessFile需要20多秒。
-            channelOut = randomAccessFile.getChannel();
-            long dd = body.contentLength();
-            // 内存映射，直接使用RandomAccessFile，是用其seek方法指定下载的起始位置，使用缓存下载，在这里指定下载位置。
-            MappedByteBuffer mappedBuffer = channelOut.map(FileChannel.MapMode.READ_WRITE, startsPoint, body.contentLength());
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len = in.read(buffer)) != -1) {
-                mappedBuffer.put(buffer, 0, len);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                in.close();
-                if (channelOut != null) {
-                    channelOut.close();
-                }
-                if (randomAccessFile != null) {
-                    randomAccessFile.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public static void prepare(Response response, File saveFile, File tempFile) {
+    public static void prepareRangeFile(Response response, File saveFile, File tempFile) {
         RandomAccessFile saveRandomAccessFile = null;
         RandomAccessFile tempRandomAccessFile = null;
         FileChannel tempChannel = null;
@@ -95,7 +61,7 @@ public class FileUtil {
         }
     }
 
-    public static void saveFile(Response response, int index, long start, long end, File saveFile, File tempFile) {
+    public static void saveRangeFile(Response response, int index, long start, long end, File saveFile, File tempFile) {
         RandomAccessFile saveRandomAccessFile = null;
         FileChannel saveChannel = null;
         InputStream inputStream = null;
@@ -104,8 +70,8 @@ public class FileUtil {
         FileChannel tempChannel = null;
 
         try {
-            Log.e("tag", "saveFile: start" + index);
-            Log.e("tag", "saveFile" + response.body().contentLength() + "");
+            Log.e("tag", "saveRangeFile: start" + index);
+            Log.e("tag", "saveRangeFile" + response.body().contentLength() + "");
             saveRandomAccessFile = new RandomAccessFile(saveFile, "rws");
             saveChannel = saveRandomAccessFile.getChannel();
             MappedByteBuffer saveBuffer = saveChannel.map(READ_WRITE, start, end - start + 1);
@@ -122,7 +88,7 @@ public class FileUtil {
                 tempBuffer.putLong(index * EACH_TEMP_SIZE, tempBuffer.get(index * EACH_TEMP_SIZE) + len);
             }
 
-            Log.e("tag", "saveFile: end" + index);
+            Log.e("tag", "saveRangeFile: end" + index);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -134,7 +100,7 @@ public class FileUtil {
         }
     }
 
-    public static Range readDownloadRange(File tempFile) throws IOException {
+    public static Ranges readDownloadRange(File tempFile) throws IOException {
         RandomAccessFile record = null;
         FileChannel channel = null;
         try {
@@ -147,7 +113,7 @@ public class FileUtil {
                 startByteArray[i] = buffer.getLong();
                 endByteArray[i] = buffer.getLong();
             }
-            return new Range(startByteArray, endByteArray);
+            return new Ranges(startByteArray, endByteArray);
         } finally {
             Utils.close(channel);
             Utils.close(record);

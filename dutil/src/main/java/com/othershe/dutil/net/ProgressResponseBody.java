@@ -1,5 +1,7 @@
 package com.othershe.dutil.net;
 
+import android.util.Log;
+
 import com.othershe.dutil.callback.DownloadCallback;
 import com.othershe.dutil.callback.FileCallback;
 

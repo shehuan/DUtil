@@ -1,6 +1,5 @@
 package com.othershe.dutiltest;
 
-import android.content.Intent;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -8,10 +7,6 @@ import android.util.Log;
 
 import com.othershe.dutil.DUtil;
 import com.othershe.dutil.callback.DownloadCallback;
-import com.othershe.dutil.callback.FileCallback;
-import com.othershe.dutil.callback.SimpleDownloadCallback;
-import com.othershe.dutil.download.DownloadManger;
-import com.othershe.dutil.service.DownloadService;
 
 import java.io.File;
 import java.util.Date;
