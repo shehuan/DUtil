@@ -2,7 +2,6 @@ package com.othershe.dutil.service;
 
 import android.support.annotation.NonNull;
 
-import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;

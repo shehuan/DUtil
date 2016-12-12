@@ -29,20 +29,33 @@ public class OkHttpManager {
         private static final OkHttpManager instance = new OkHttpManager();
     }
 
-    public void initRequest(String url, long start, long end, final Callback callback) {
+    public Call initRequest(String url, long start, long end, final Callback callback) {
         Request request = new Request.Builder()
                 .url(url)
-                .header("RANGE", "bytes=" + start + "-" + end)
+                .header("Range", "bytes=" + start + "-" + end)
+                .build();
+
+        Call call = okHttpClient.newCall(request);
+        call.enqueue(callback);
+
+        return call;
+    }
+
+    public void initRequest(String url, final Callback callback) {
+        Request request = new Request.Builder()
+                .url(url)
+                .header("Range", "bytes=0-")
                 .build();
 
         Call call = okHttpClient.newCall(request);
         call.enqueue(callback);
     }
 
-    public void initRequest(String url, final Callback callback) {
+    public void initRequest(String url, final Callback callback, String ifRange) {
         Request request = new Request.Builder()
                 .url(url)
-                .header("RANGE", "bytes=0-")
+                .header("Range", "bytes=0-")
+                .header("If-Range", ifRange)
                 .build();
 
         Call call = okHttpClient.newCall(request);

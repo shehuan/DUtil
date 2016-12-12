@@ -69,11 +69,11 @@ public class ProgressResponseBody extends ResponseBody {
                 long bytesRead = super.read(sink, byteCount);
                 totalBytesRead += bytesRead != -1 ? bytesRead : 0;
 
-                if (fileCallback != null && fileCallback instanceof DownloadCallback) {
-                    ((DownloadCallback) fileCallback).onProgress(totalBytesRead,
-                            responseBody.contentLength(),
-                            (int) (100 * totalBytesRead * 1.0 / responseBody.contentLength()));
-                }
+//                if (fileCallback != null && fileCallback instanceof DownloadCallback) {
+//                    ((DownloadCallback) fileCallback).onProgress(totalBytesRead,
+//                            responseBody.contentLength(),
+//                            (int) (100 * totalBytesRead * 1.0 / responseBody.contentLength()));
+//                }
                 return bytesRead;
             }
         };
