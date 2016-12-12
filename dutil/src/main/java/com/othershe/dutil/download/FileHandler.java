@@ -16,12 +16,12 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
+import static com.othershe.dutil.data.Consts.ON_CANCEL;
 import static com.othershe.dutil.data.Consts.ON_PROGRESS;
 import static com.othershe.dutil.data.Consts.ON_START;
 import static java.nio.channels.FileChannel.MapMode.READ_WRITE;
@@ -32,8 +32,8 @@ public class FileHandler {
     private int THREAD_COUNT;
     private int TEMP_FILE_TOTAL_SIZE;
 
-    private boolean IS_PAUSE = false;
-    private boolean IS_CANCEL = false;
+    private boolean IS_PAUSE = false; //是否暂停
+    private boolean IS_CANCEL = false; //是否取消
 
     private String path;
     private String name;
@@ -207,6 +207,12 @@ public class FileHandler {
                 }
             }
 
+            if (IS_CANCEL) {
+                handler.sendEmptyMessage(ON_CANCEL);
+                Utils.deleteFile(new File(path, name + ".temp"));
+                Utils.deleteFile(new File(path, name));
+            }
+
             Log.e("tag", "saveRangeFile: end" + index);
         } catch (Exception e) {
             onError(e.toString());
@@ -243,13 +249,18 @@ public class FileHandler {
 
             int len;
             byte[] buffer = new byte[8192];
-            while ((len = inputStream.read(buffer)) != -1) {
+            while (!IS_CANCEL && (len = inputStream.read(buffer)) != -1) {
                 outputStream.write(buffer, 0, len);
                 onProgress(len);
 
                 while (IS_PAUSE) {
 
                 }
+            }
+
+            if (IS_CANCEL) {
+                handler.sendEmptyMessage(ON_CANCEL);
+                Utils.deleteFile(new File(path, name));
             }
         } catch (Exception e) {
             onError(e.toString());

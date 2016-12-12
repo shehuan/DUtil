@@ -15,11 +15,11 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
+import static com.othershe.dutil.data.Consts.ON_CANCEL;
 import static com.othershe.dutil.data.Consts.ON_ERROR;
 import static com.othershe.dutil.data.Consts.ON_FINISH;
 import static com.othershe.dutil.data.Consts.ON_PROGRESS;
 import static com.othershe.dutil.data.Consts.ON_START;
-
 
 public class DownloadManger {
 
@@ -60,6 +60,13 @@ public class DownloadManger {
                     }
 
                     break;
+                case ON_CANCEL:
+                    if (currentSize == 0) {
+                        return;
+                    }
+                    currentSize = 0;
+                    downloadCallback.onProgress(Utils.formatSize(0), Utils.formatSize(totalSize), 0);
+                    break;
                 case ON_FINISH:
                     Utils.deleteFile(new File(path, name + ".temp"));
                     downloadCallback.onFinish(new File(path, name));
@@ -82,6 +89,7 @@ public class DownloadManger {
 
     public DownloadManger execute(final DownloadCallback callback) {
         this.downloadCallback = callback;
+        mFileHandler = new FileHandler(url, path, name, thread, mHandler);
 
         OkHttpManager.getInstance().initRequest(url, new Callback() {
             @Override
@@ -91,8 +99,6 @@ public class DownloadManger {
 
             @Override
             public void onResponse(Call call, final Response response) throws IOException {
-                mFileHandler = new FileHandler(url, path, name, thread, mHandler);
-
                 if (Utils.isSupportRange(response)) {
                     mFileHandler.saveRangeFile(response);
                 } else {
@@ -114,10 +120,6 @@ public class DownloadManger {
 
     public void cancel() {
         mFileHandler.onCancel();
-        mFileHandler.onProgress(0);
-
-        Utils.deleteFile(new File(path, name + ".temp"));
-        Utils.deleteFile(new File(path, name));
     }
 
     public void restart() {
@@ -131,8 +133,6 @@ public class DownloadManger {
 
             @Override
             public void onResponse(Call call, final Response response) throws IOException {
-                mFileHandler = new FileHandler(url, path, name, thread, mHandler);
-
                 if (Utils.isSupportRange(response)) {
                     mFileHandler.saveRangeFile(response);
                 } else {
