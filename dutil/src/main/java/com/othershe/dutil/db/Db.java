@@ -46,59 +46,62 @@ public class Db {
     /**
      * 保存下载信息
      */
-    public void saveDInfo(List<DownloadData> datas) {
+    public void insertData(DownloadData data) {
+        ContentValues values = new ContentValues();
+        values.put("url", data.getUrl());
+        values.put("path", data.getPath());
+        values.put("name", data.getName());
+        values.put("current_size", data.getCurrentSize());
+        values.put("total_size", data.getTotalSize());
+        values.put("date", data.getDate());
+        sqldb.insert(TABLE_NAME_DOWNLOAD, null, values);
+    }
+
+    public void insertDatas(List<DownloadData> datas) {
         for (DownloadData data : datas) {
-            ContentValues values = new ContentValues();
-            values.put("thread_id", data.getThreadId());
-            values.put("start_pos", data.getStartPos());
-            values.put("end_pos", data.getEndPos());
-            values.put("complete_size", data.getCompleteSize());
-            values.put("url", data.getUrl());
-            sqldb.insert(TABLE_NAME_DOWNLOAD, null, values);
+            insertData(data);
         }
     }
 
     /**
      * 获得下载信息
      */
-    public List<DownloadData> getDInfo(String url) {
-        List<DownloadData> list = new ArrayList<>();
+    public DownloadData getData(String url) {
 
-        Cursor cursor = sqldb.query("City", null, "province_id = ?",
+        Cursor cursor = sqldb.query(TABLE_NAME_DOWNLOAD, null, "url = ?",
                 new String[]{url}, null, null, null);
 
-        if (cursor.moveToFirst()) {
-            do {
-                DownloadData data = new DownloadData();
-
-                data.setThreadId(cursor.getInt(cursor.getColumnIndex("thread_id")));
-                data.setStartPos(cursor.getInt(cursor.getColumnIndex("start_pos")));
-                data.setEndPos(cursor.getInt(cursor.getColumnIndex("end_pos")));
-                data.setCompleteSize(cursor.getInt(cursor.getColumnIndex("complete_size")));
-                data.setUrl(cursor.getString(cursor.getColumnIndex("url")));
-
-                list.add(data);
-            } while (cursor.moveToNext());
+        if (!cursor.moveToFirst()) {
+            return null;
         }
+
+        DownloadData data = new DownloadData();
+
+        data.setUrl(cursor.getString(cursor.getColumnIndex("url")));
+        data.setPath(cursor.getString(cursor.getColumnIndex("path")));
+        data.setName(cursor.getString(cursor.getColumnIndex("name")));
+        data.setCurrentSize(cursor.getInt(cursor.getColumnIndex("current_size")));
+        data.setTotalSize(cursor.getInt(cursor.getColumnIndex("total_size")));
+        data.setDate(cursor.getInt(cursor.getColumnIndex("date")));
 
         cursor.close();
 
-        return list;
+        return data;
     }
 
     /**
      * 更新下载信息
      */
-    public void updateDInfo(int threadId, int completeSize, String url) {
+    public void updateData(int currentSize, String url) {
         ContentValues values = new ContentValues();
-        values.put("complete_size", completeSize);
-        sqldb.update(TABLE_NAME_DOWNLOAD, values, "threadId = ? and url = ?", new String[]{String.valueOf(threadId), url});
+        values.put("current_size", currentSize);
+        sqldb.update(TABLE_NAME_DOWNLOAD, values, "url = ?", new String[]{url});
     }
 
     /**
      * 删除下载信息
      */
-    public void deleteDInfo(String url) {
+    public void deleteData(String url) {
         sqldb.delete(TABLE_NAME_DOWNLOAD, "url = ?", new String[]{url});
     }
 }

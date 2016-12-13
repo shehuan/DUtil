@@ -6,7 +6,7 @@ public interface DownloadCallback extends FileCallback {
     /**
      * 下载开始
      */
-    void onStart(String totalSize);
+    void onStart(long currentSize, long totalSize, float progress);
 
     /**
      * 下载中
@@ -15,7 +15,7 @@ public interface DownloadCallback extends FileCallback {
      * @param totalSize
      * @param progress
      */
-    void onProgress(String currentSize, String totalSize, int progress);
+    void onProgress(long currentSize, long totalSize, float progress);
 
     /**
      * 下载暂停

@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.othershe.dutil.DUtil;
+import com.othershe.dutil.Utils.Utils;
 import com.othershe.dutil.callback.DownloadCallback;
 import com.othershe.dutil.download.DownloadManger;
 
@@ -30,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView mPause;
     private TextView mResume;
 
+    DownloadManger manger;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,22 +47,23 @@ public class MainActivity extends AppCompatActivity {
 //        Intent intent = new Intent(this, DownloadService.class);
 //        startService(intent);
 
-        final DownloadManger manger = DUtil.initDownload()
+        manger = DUtil.initDownload(this)
                 .url("http://download.apk8.com/d2/soft/bohe.apk")
                 .path(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath())
                 .name("test1.apk")
-                .thread(3)
+                .thread(2)
                 .build()
                 .execute(new DownloadCallback() {
 
                     @Override
-                    public void onStart(String totalSize) {
-                        mSize.setText(totalSize);
+                    public void onStart(long currentSize, long totalSize, float progress) {
+                        mSize.setText(Utils.formatSize(totalSize));
+                        mProgress.setText(Utils.formatSize(currentSize) + " / " + Utils.formatSize(totalSize) + " #### " + progress + "%");
                     }
 
                     @Override
-                    public void onProgress(String currentSize, String totalSize, int progress) {
-                        mProgress.setText(currentSize + " / " + totalSize + " #### " + progress + "%");
+                    public void onProgress(long currentSize, long totalSize, float progress) {
+                        mProgress.setText(Utils.formatSize(currentSize) + " / " + Utils.formatSize(totalSize) + " #### " + progress + "%");
                     }
 
                     @Override
@@ -86,15 +90,21 @@ public class MainActivity extends AppCompatActivity {
         mPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                manger.cancel();
+                manger.pause();
             }
         });
 
         mResume.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                manger.restart();
+                manger.resume();
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        manger.pause();
+        super.onDestroy();
     }
 }

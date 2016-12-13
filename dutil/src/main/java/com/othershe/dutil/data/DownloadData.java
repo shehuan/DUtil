@@ -1,61 +1,25 @@
 package com.othershe.dutil.data;
 
 public class DownloadData {
-    private int threadId;
-    private int startPos;
-    private int endPos;
-    private int completeSize;
+
     private String url;
+    private String path;
+    private String name;
+    private int currentSize;
+    private int totalSize;
+    private long date;
 
     public DownloadData() {
 
     }
 
-    /**
-     * @param threadId     线程id
-     * @param startPos     下载开始位置
-     * @param endPos       下载结束位置
-     * @param completeSize 已下载大小
-     * @param url          下载地址
-     */
-    public DownloadData(int threadId, int startPos, int endPos, int completeSize, String url) {
-        this.threadId = threadId;
-        this.startPos = startPos;
-        this.endPos = endPos;
-        this.completeSize = completeSize;
+    public DownloadData(String url, String path, String name, int currentSize, int totalSize, long date) {
         this.url = url;
-    }
-
-    public int getThreadId() {
-        return threadId;
-    }
-
-    public void setThreadId(int threadId) {
-        this.threadId = threadId;
-    }
-
-    public int getStartPos() {
-        return startPos;
-    }
-
-    public void setStartPos(int startPos) {
-        this.startPos = startPos;
-    }
-
-    public int getEndPos() {
-        return endPos;
-    }
-
-    public void setEndPos(int endPos) {
-        this.endPos = endPos;
-    }
-
-    public int getCompleteSize() {
-        return completeSize;
-    }
-
-    public void setCompleteSize(int completeSize) {
-        this.completeSize = completeSize;
+        this.path = path;
+        this.currentSize = currentSize;
+        this.name = name;
+        this.totalSize = totalSize;
+        this.date = date;
     }
 
     public String getUrl() {
@@ -64,5 +28,45 @@ public class DownloadData {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getCurrentSize() {
+        return currentSize;
+    }
+
+    public void setCurrentSize(int currentSize) {
+        this.currentSize = currentSize;
+    }
+
+    public int getTotalSize() {
+        return totalSize;
+    }
+
+    public void setTotalSize(int totalSize) {
+        this.totalSize = totalSize;
+    }
+
+    public long getDate() {
+        return date;
+    }
+
+    public void setDate(int date) {
+        this.date = date;
     }
 }

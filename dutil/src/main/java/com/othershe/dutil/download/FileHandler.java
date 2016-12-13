@@ -21,9 +21,10 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-import static com.othershe.dutil.data.Consts.ON_CANCEL;
-import static com.othershe.dutil.data.Consts.ON_PROGRESS;
-import static com.othershe.dutil.data.Consts.ON_START;
+import static com.othershe.dutil.data.Consts.CANCEL;
+import static com.othershe.dutil.data.Consts.PAUSE;
+import static com.othershe.dutil.data.Consts.PROGRESS;
+import static com.othershe.dutil.data.Consts.START;
 import static java.nio.channels.FileChannel.MapMode.READ_WRITE;
 
 public class FileHandler {
@@ -52,14 +53,14 @@ public class FileHandler {
 
     private void onStart(long fileLength) {
         Message message = Message.obtain();
-        message.what = ON_START;
+        message.what = START;
         message.arg1 = (int) fileLength;
         handler.sendMessage(message);
     }
 
     public void onProgress(int length) {
         Message message = Message.obtain();
-        message.what = ON_PROGRESS;
+        message.what = PROGRESS;
         message.arg1 = length;
         handler.sendMessage(message);
     }
@@ -82,7 +83,7 @@ public class FileHandler {
 
     public void onError(String msg) {
         Message message = Message.obtain();
-        message.what = ON_START;
+        message.what = START;
         message.obj = msg;
         handler.sendMessage(message);
     }
@@ -109,9 +110,9 @@ public class FileHandler {
 
             if (saveFile.exists() && tempFile.exists()) {
                 return;
-            } else {
-                Utils.deleteFile(saveFile, tempFile);
             }
+
+            Utils.deleteFile(saveFile, tempFile);
 
             saveRandomAccessFile = new RandomAccessFile(saveFile, "rws");
             saveRandomAccessFile.setLength(fileLength);
@@ -181,9 +182,9 @@ public class FileHandler {
         RandomAccessFile tempRandomAccessFile = null;
         FileChannel tempChannel = null;
 
+        Log.e("range-ooooo" + index, range.start[index] + " = " + range.end[index]);
+
         try {
-            Log.e("tag", "saveRangeFile: start" + index);
-            Log.e("tag", "saveRangeFile" + response.body().contentLength() + "");
             saveRandomAccessFile = new RandomAccessFile(saveFile, "rws");
             saveChannel = saveRandomAccessFile.getChannel();
             MappedByteBuffer saveBuffer = saveChannel.map(READ_WRITE, range.start[index], range.end[index] - range.start[index] + 1);
@@ -194,13 +195,20 @@ public class FileHandler {
 
             inputStream = response.body().byteStream();
             int len;
-            byte[] buffer = new byte[8192];
+            byte[] buffer = new byte[4096];
 
             while (!IS_CANCEL && (len = inputStream.read(buffer)) != -1) {
                 saveBuffer.put(buffer, 0, len);
-                tempBuffer.putLong(index * EACH_TEMP_SIZE, tempBuffer.get(index * EACH_TEMP_SIZE) + len);
+
+                tempBuffer.putLong(index * EACH_TEMP_SIZE, tempBuffer.getLong(index * EACH_TEMP_SIZE) + len);
 
                 onProgress(len);
+
+                if (IS_PAUSE) {
+                    handler.sendEmptyMessage(PAUSE);
+
+                    Log.e("range-kkkkk" + index, readDownloadRange(tempFile).start[index] + " = " + readDownloadRange(tempFile).end[index]);
+                }
 
                 while (IS_PAUSE) {
 
@@ -208,12 +216,10 @@ public class FileHandler {
             }
 
             if (IS_CANCEL) {
-                handler.sendEmptyMessage(ON_CANCEL);
+                handler.sendEmptyMessage(CANCEL);
                 Utils.deleteFile(new File(path, name + ".temp"));
                 Utils.deleteFile(new File(path, name));
             }
-
-            Log.e("tag", "saveRangeFile: end" + index);
         } catch (Exception e) {
             onError(e.toString());
         } finally {
@@ -248,7 +254,7 @@ public class FileHandler {
             outputStream = new FileOutputStream(file);
 
             int len;
-            byte[] buffer = new byte[8192];
+            byte[] buffer = new byte[4096];
             while (!IS_CANCEL && (len = inputStream.read(buffer)) != -1) {
                 outputStream.write(buffer, 0, len);
                 onProgress(len);
@@ -259,7 +265,7 @@ public class FileHandler {
             }
 
             if (IS_CANCEL) {
-                handler.sendEmptyMessage(ON_CANCEL);
+                handler.sendEmptyMessage(CANCEL);
                 Utils.deleteFile(new File(path, name));
             }
         } catch (Exception e) {

@@ -6,6 +6,8 @@ import android.os.Message;
 
 import com.othershe.dutil.Utils.Utils;
 import com.othershe.dutil.callback.DownloadCallback;
+import com.othershe.dutil.data.DownloadData;
+import com.othershe.dutil.db.Db;
 import com.othershe.dutil.net.OkHttpManager;
 
 import java.io.File;
@@ -15,15 +17,15 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-import static com.othershe.dutil.data.Consts.ON_CANCEL;
-import static com.othershe.dutil.data.Consts.ON_ERROR;
-import static com.othershe.dutil.data.Consts.ON_FINISH;
-import static com.othershe.dutil.data.Consts.ON_PROGRESS;
-import static com.othershe.dutil.data.Consts.ON_START;
+import static com.othershe.dutil.data.Consts.CANCEL;
+import static com.othershe.dutil.data.Consts.ERROR;
+import static com.othershe.dutil.data.Consts.FINISH;
+import static com.othershe.dutil.data.Consts.NONE;
+import static com.othershe.dutil.data.Consts.PAUSE;
+import static com.othershe.dutil.data.Consts.PROGRESS;
+import static com.othershe.dutil.data.Consts.START;
 
 public class DownloadManger {
-
-    private DownloadCallback downloadCallback;
 
     private String url;
     private String path;
@@ -32,6 +34,10 @@ public class DownloadManger {
     private int task;
 
     private Context context;
+
+    private DownloadCallback downloadCallback;
+
+    private int mCurrentState = NONE;
 
     private int currentSize = 0;
     private int totalSize = 0;
@@ -42,36 +48,48 @@ public class DownloadManger {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what) {
-                case ON_START:
+            mCurrentState = msg.what;
+            switch (mCurrentState) {
+                case START:
                     totalSize = msg.arg1;
-                    downloadCallback.onStart(Utils.formatSize(totalSize));
+                    DownloadData data = Db.getInstance(context).getData(url);
+                    if (data != null) {
+                        currentSize = data.getCurrentSize();
+                    } else {
+                        Db.getInstance(context).insertData(new DownloadData(url, path, name, 0, totalSize, System.currentTimeMillis()));
+                    }
+
+                    downloadCallback.onStart(currentSize, totalSize, Utils.getPercentage(currentSize, totalSize));
                     break;
-                case ON_PROGRESS:
+                case PROGRESS:
                     synchronized (this) {
                         currentSize += msg.arg1;
-                        downloadCallback.onProgress(Utils.formatSize(currentSize),
-                                Utils.formatSize(totalSize),
-                                Utils.getPercentage(currentSize, totalSize));
-                    }
+                        downloadCallback.onProgress(currentSize, totalSize, Utils.getPercentage(currentSize, totalSize));
 
-                    if (currentSize >= totalSize) {
-                        sendEmptyMessage(ON_FINISH);
+                        if (currentSize == totalSize) {
+                            sendEmptyMessage(FINISH);
+                        }
                     }
 
                     break;
-                case ON_CANCEL:
+                case CANCEL:
                     if (currentSize == 0) {
                         return;
                     }
                     currentSize = 0;
-                    downloadCallback.onProgress(Utils.formatSize(0), Utils.formatSize(totalSize), 0);
+                    downloadCallback.onProgress(0, totalSize, 0);
                     break;
-                case ON_FINISH:
+                case PAUSE:
+                    synchronized (this) {
+                        Db.getInstance(context).updateData(currentSize, url);
+                    }
+                    break;
+                case FINISH:
                     Utils.deleteFile(new File(path, name + ".temp"));
+                    Db.getInstance(context).deleteData(url);
                     downloadCallback.onFinish(new File(path, name));
                     break;
-                case ON_ERROR:
+                case ERROR:
                     downloadCallback.onError((String) msg.obj);
                     break;
             }
@@ -112,17 +130,26 @@ public class DownloadManger {
 
     public void pause() {
         mFileHandler.onPause();
+        mCurrentState = PAUSE;
     }
 
     public void resume() {
+        if (mCurrentState != PAUSE) {
+            return;
+        }
         mFileHandler.onResume();
     }
 
     public void cancel() {
         mFileHandler.onCancel();
+        mCurrentState = CANCEL;
     }
 
     public void restart() {
+        if (mCurrentState != CANCEL) {
+            return;
+        }
+
         mFileHandler.onRestart();
 
         OkHttpManager.getInstance().initRequest(url, new Callback() {

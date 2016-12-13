@@ -5,12 +5,12 @@ import java.io.File;
 public abstract class SimpleDownloadCallback implements DownloadCallback {
 
     @Override
-    public void onStart(String totalSize) {
+    public void onStart(long currentSize, long totalSize, float progress) {
 
     }
 
     @Override
-    public void onProgress(String currentSize, String totalSize, int progress) {
+    public void onProgress(long currentSize, long totalSize, float progress) {
 
     }
 

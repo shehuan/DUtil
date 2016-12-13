@@ -158,12 +158,12 @@ public class Utils {
         return resultSize;
     }
 
-    public static int getPercentage(int currentSize, int totalSize) {
+    public static float getPercentage(int currentSize, int totalSize) {
         if (currentSize > totalSize) {
             return 0;
         }
 
-        return (int) (currentSize * 100.0 / totalSize);
+        return ((int) (currentSize * 10000.0 / totalSize)) * 1.0f / 100;
     }
 
     /**

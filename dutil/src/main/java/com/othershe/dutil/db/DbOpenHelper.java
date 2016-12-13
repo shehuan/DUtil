@@ -12,11 +12,12 @@ public class DbOpenHelper extends SQLiteOpenHelper {
      */
     public static final String CREATE_DOWNLOAD_INFO = "create table download_info ("
             + "id integer primary key autoincrement, "
-            + "thread_id integer, "
-            + "start_pos integer, "
-            + "end_pos integer, "
-            + "complete_size integer, "
-            + "url text)";
+            + "url text, "
+            + "path text, "
+            + "name text, "
+            + "current_size integer, "
+            + "total_size integer, "
+            + "date text)";
 
     public DbOpenHelper(Context context, String name, CursorFactory factory,
                         int version) {
