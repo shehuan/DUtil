@@ -20,10 +20,6 @@ public class DUtil {
         return new DBuilder(context);
     }
 
-    public static DBuilder initDownload() {
-        return new DBuilder();
-    }
-
 //    public void download() {
 //
 //    }

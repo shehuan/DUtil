@@ -18,11 +18,13 @@ import okhttp3.Callback;
 import okhttp3.Response;
 
 import static com.othershe.dutil.data.Consts.CANCEL;
+import static com.othershe.dutil.data.Consts.DESTROY;
 import static com.othershe.dutil.data.Consts.ERROR;
 import static com.othershe.dutil.data.Consts.FINISH;
 import static com.othershe.dutil.data.Consts.NONE;
 import static com.othershe.dutil.data.Consts.PAUSE;
 import static com.othershe.dutil.data.Consts.PROGRESS;
+import static com.othershe.dutil.data.Consts.RESTART;
 import static com.othershe.dutil.data.Consts.START;
 
 public class DownloadManger {
@@ -31,7 +33,6 @@ public class DownloadManger {
     private String path;
     private String name;
     private int thread;
-    private int task;
 
     private Context context;
 
@@ -44,11 +45,15 @@ public class DownloadManger {
 
     private FileHandler mFileHandler;
 
+    //记录已经暂停的线程数
+    private int tempCount = 0;
+
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             mCurrentState = msg.what;
+
             switch (mCurrentState) {
                 case START:
                     totalSize = msg.arg1;
@@ -73,59 +78,75 @@ public class DownloadManger {
 
                     break;
                 case CANCEL:
-                    if (currentSize == 0) {
-                        return;
+                    synchronized (this) {
+                        currentSize = 0;
+                        downloadCallback.onProgress(0, totalSize, 0);
+                        Db.getInstance(context).deleteData(url);
+                        Utils.deleteFile(new File(path, name + ".temp"));
+                        Utils.deleteFile(new File(path, name));
+                        tempCount++;
+                        if (tempCount == thread) {
+                            downloadCallback.onPause();
+                            tempCount = 0;
+                            sendEmptyMessage(RESTART);
+                        }
                     }
-                    currentSize = 0;
-                    downloadCallback.onProgress(0, totalSize, 0);
+                    break;
+
+                case RESTART:
+                    init();
                     break;
                 case PAUSE:
                     synchronized (this) {
                         Db.getInstance(context).updateData(currentSize, url);
+                        tempCount++;
+                        if (tempCount == thread) {
+                            downloadCallback.onPause();
+                            tempCount = 0;
+                        }
                     }
                     break;
                 case FINISH:
+                    currentSize = 0;
                     Utils.deleteFile(new File(path, name + ".temp"));
                     Db.getInstance(context).deleteData(url);
                     downloadCallback.onFinish(new File(path, name));
                     break;
+                case DESTROY:
+                    synchronized (this) {
+                        Db.getInstance(context).updateData(currentSize, url);
+                    }
+                    break;
                 case ERROR:
                     downloadCallback.onError((String) msg.obj);
+                    Db.getInstance(context).deleteData(url);
                     break;
             }
         }
     };
 
-    public DownloadManger(Context context, String url, String path, String name, int thread, int task) {
+    public DownloadManger(Context context, String url, String path, String name, int thread) {
         this.context = context;
         this.url = url;
         this.path = path;
         this.name = name;
         this.thread = thread;
-        this.task = task;
     }
 
     public DownloadManger execute(final DownloadCallback callback) {
         this.downloadCallback = callback;
         mFileHandler = new FileHandler(url, path, name, thread, mHandler);
 
-        OkHttpManager.getInstance().initRequest(url, new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                mFileHandler.onError(e.toString());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (Utils.isSupportRange(response)) {
-                    mFileHandler.saveRangeFile(response);
-                } else {
-                    mFileHandler.saveCommonFile(response);
-                }
-            }
-        });
+        init();
 
         return this;
+    }
+
+    public void destroy() {
+        if (mCurrentState == CANCEL) {
+            return;
+        }
+        mFileHandler.onDestroy();
     }
 
     public void pause() {
@@ -146,12 +167,10 @@ public class DownloadManger {
     }
 
     public void restart() {
-        if (mCurrentState != CANCEL) {
-            return;
-        }
-
         mFileHandler.onRestart();
+    }
 
+    private void init() {
         OkHttpManager.getInstance().initRequest(url, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {

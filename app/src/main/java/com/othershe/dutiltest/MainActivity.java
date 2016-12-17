@@ -19,17 +19,20 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
     /**
-     * https://gdl.25pp.com/wm/8/24/com.yunchang.buliangren.uc_9981432_1802333051c8.apk
-     * https://gdl.25pp.com/s/2/2/20160912113718937754_tcsdzz_1473311582981.apk
+     * http://1.198.5.23/imtt.dd.qq.com/16891/B8723A0DB2F2702C04D801D9FD19822C.apk //阴阳师
+     * http://1.82.215.170/imtt.dd.qq.com/16891/85B6221DE84C466310575D9FBCA453A8.apk  //ttkp
+     * http://1.198.5.22/imtt.dd.qq.com/16891/8EEC7D8996760973B5CEA15ECA1700E3.apk  //xxl
      * http://download.apk8.com/d2/soft/bohe.apk
      *
      * @param savedInstanceState
      */
 
-    private TextView mSize;
+    private TextView mTip;
     private TextView mProgress;
     private TextView mPause;
     private TextView mResume;
+    private TextView mCancel;
+    private TextView mRestart;
 
     DownloadManger manger;
 
@@ -38,10 +41,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mSize = (TextView) findViewById(R.id.size);
+        mTip = (TextView) findViewById(R.id.tip);
         mProgress = (TextView) findViewById(R.id.progress);
         mPause = (TextView) findViewById(R.id.pause);
         mResume = (TextView) findViewById(R.id.resume);
+        mCancel = (TextView) findViewById(R.id.cancel);
+        mRestart = (TextView) findViewById(R.id.restart);
 
 //
 //        Intent intent = new Intent(this, DownloadService.class);
@@ -57,18 +62,19 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onStart(long currentSize, long totalSize, float progress) {
-                        mSize.setText(Utils.formatSize(totalSize));
+                        mTip.setText("准备中...");
                         mProgress.setText(Utils.formatSize(currentSize) + " / " + Utils.formatSize(totalSize) + " #### " + progress + "%");
                     }
 
                     @Override
                     public void onProgress(long currentSize, long totalSize, float progress) {
+                        mTip.setText("下载中...");
                         mProgress.setText(Utils.formatSize(currentSize) + " / " + Utils.formatSize(totalSize) + " #### " + progress + "%");
                     }
 
                     @Override
                     public void onPause() {
-
+                        mTip.setText("暂停中...");
                     }
 
                     @Override
@@ -100,11 +106,25 @@ public class MainActivity extends AppCompatActivity {
                 manger.resume();
             }
         });
+
+        mCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                manger.cancel();
+            }
+        });
+
+        mRestart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                manger.restart();
+            }
+        });
     }
 
     @Override
     protected void onDestroy() {
-        manger.pause();
+        manger.destroy();
         super.onDestroy();
     }
 }

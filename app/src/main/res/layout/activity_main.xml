@@ -12,7 +12,7 @@
     tools:context="com.othershe.dutiltest.MainActivity">
 
     <TextView
-        android:id="@+id/size"
+        android:id="@+id/tip"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
@@ -22,17 +22,42 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp" />
 
-    <TextView
-        android:id="@+id/pause"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="暂停" />
+        android:layout_marginTop="20dp">
 
-    <TextView
-        android:id="@+id/resume"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="继续" />
+        <TextView
+            android:id="@+id/pause"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="暂停" />
+
+        <TextView
+            android:id="@+id/resume"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="继续" />
+
+        <TextView
+            android:id="@+id/cancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="取消" />
+
+        <TextView
+            android:id="@+id/restart"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="重新开始" />
+
+    </LinearLayout>
 </LinearLayout>

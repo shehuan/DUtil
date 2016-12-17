@@ -16,12 +16,16 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
 import static com.othershe.dutil.data.Consts.CANCEL;
+import static com.othershe.dutil.data.Consts.DESTROY;
+import static com.othershe.dutil.data.Consts.ERROR;
 import static com.othershe.dutil.data.Consts.PAUSE;
 import static com.othershe.dutil.data.Consts.PROGRESS;
 import static com.othershe.dutil.data.Consts.START;
@@ -35,11 +39,14 @@ public class FileHandler {
 
     private boolean IS_PAUSE = false; //是否暂停
     private boolean IS_CANCEL = false; //是否取消
+    private boolean IS_DESTROY = false;
 
     private String path;
     private String name;
     private String url;
     private Handler handler;
+
+    private List<Call> callList;
 
     public FileHandler(String url, String path, String name, int threadCount, Handler handler) {
         THREAD_COUNT = threadCount == 0 ? 3 : threadCount;
@@ -75,17 +82,32 @@ public class FileHandler {
 
     public void onCancel() {
         IS_CANCEL = true;
+        if (IS_PAUSE) {
+            IS_PAUSE = false;
+        }
     }
 
     public void onRestart() {
-        IS_CANCEL = false;
+        if (IS_CANCEL) {
+            IS_CANCEL = false;
+            return;
+        }
+
+        onCancel();
     }
 
     public void onError(String msg) {
         Message message = Message.obtain();
-        message.what = START;
+        message.what = ERROR;
         message.obj = msg;
         handler.sendMessage(message);
+    }
+
+    public void onDestroy() {
+        IS_DESTROY = true;
+        if (IS_PAUSE) {
+            IS_PAUSE = false;
+        }
     }
 
     /**
@@ -158,9 +180,11 @@ public class FileHandler {
 
         final Ranges range = readDownloadRange(tempFile);
 
+        callList = new ArrayList<>();
+
         for (int i = 0; i < THREAD_COUNT; i++) {
             final int tempI = i;
-            OkHttpManager.getInstance().initRequest(url, range.start[i], range.end[i], new Callback() {
+            Call call = OkHttpManager.getInstance().initRequest(url, range.start[i], range.end[i], new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
                     onError(e.toString());
@@ -171,6 +195,8 @@ public class FileHandler {
                     startSaveRangeFile(response, tempI, range, saveFile, tempFile);
                 }
             });
+
+            callList.add(call);
         }
     }
 
@@ -182,7 +208,7 @@ public class FileHandler {
         RandomAccessFile tempRandomAccessFile = null;
         FileChannel tempChannel = null;
 
-        Log.e("range-ooooo" + index, range.start[index] + " = " + range.end[index]);
+        Log.e("range-o" + index, range.start[index] + " = " + range.end[index]);
 
         try {
             saveRandomAccessFile = new RandomAccessFile(saveFile, "rws");
@@ -197,28 +223,32 @@ public class FileHandler {
             int len;
             byte[] buffer = new byte[4096];
 
-            while (!IS_CANCEL && (len = inputStream.read(buffer)) != -1) {
+            while ((len = inputStream.read(buffer)) != -1) {
+                if (IS_CANCEL) {
+                    handler.sendEmptyMessage(CANCEL);
+                    callList.get(index).cancel();
+                    break;
+                }
+
                 saveBuffer.put(buffer, 0, len);
-
                 tempBuffer.putLong(index * EACH_TEMP_SIZE, tempBuffer.getLong(index * EACH_TEMP_SIZE) + len);
-
                 onProgress(len);
+
+                if (IS_DESTROY) {
+                    handler.sendEmptyMessage(DESTROY);
+                    callList.get(index).cancel();
+                    Log.e("destroy" + index, readDownloadRange(tempFile).start[index] + " = " + readDownloadRange(tempFile).end[index]);
+                    break;
+                }
 
                 if (IS_PAUSE) {
                     handler.sendEmptyMessage(PAUSE);
-
-                    Log.e("range-kkkkk" + index, readDownloadRange(tempFile).start[index] + " = " + readDownloadRange(tempFile).end[index]);
+                    Log.e("pause" + index, readDownloadRange(tempFile).start[index] + " = " + readDownloadRange(tempFile).end[index]);
                 }
 
                 while (IS_PAUSE) {
-
+                    Thread.currentThread().sleep(500);
                 }
-            }
-
-            if (IS_CANCEL) {
-                handler.sendEmptyMessage(CANCEL);
-                Utils.deleteFile(new File(path, name + ".temp"));
-                Utils.deleteFile(new File(path, name));
             }
         } catch (Exception e) {
             onError(e.toString());
@@ -255,18 +285,28 @@ public class FileHandler {
 
             int len;
             byte[] buffer = new byte[4096];
-            while (!IS_CANCEL && (len = inputStream.read(buffer)) != -1) {
+            while ((len = inputStream.read(buffer)) != -1) {
+                if (IS_CANCEL) {
+                    handler.sendEmptyMessage(CANCEL);
+                    Utils.deleteFile(new File(path, name));
+                    break;
+                }
+
                 outputStream.write(buffer, 0, len);
                 onProgress(len);
+
+                if (IS_DESTROY) {
+                    handler.sendEmptyMessage(PAUSE);
+                    break;
+                }
+
+                if (IS_PAUSE) {
+                    handler.sendEmptyMessage(PAUSE);
+                }
 
                 while (IS_PAUSE) {
 
                 }
-            }
-
-            if (IS_CANCEL) {
-                handler.sendEmptyMessage(CANCEL);
-                Utils.deleteFile(new File(path, name));
             }
         } catch (Exception e) {
             onError(e.toString());
