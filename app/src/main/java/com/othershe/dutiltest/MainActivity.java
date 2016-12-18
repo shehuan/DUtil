@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
 //        startService(intent);
 
         manger = DUtil.initDownload(this)
-                .url("http://download.apk8.com/d2/soft/bohe.apk")
+                .url("http://1.82.215.170/imtt.dd.qq.com/16891/85B6221DE84C466310575D9FBCA453A8.apk")
                 .path(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath())
                 .name("test1.apk")
                 .thread(2)

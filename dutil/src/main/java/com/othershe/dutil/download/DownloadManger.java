@@ -79,16 +79,16 @@ public class DownloadManger {
                     break;
                 case CANCEL:
                     synchronized (this) {
-                        currentSize = 0;
-                        downloadCallback.onProgress(0, totalSize, 0);
-                        Db.getInstance(context).deleteData(url);
-                        Utils.deleteFile(new File(path, name + ".temp"));
-                        Utils.deleteFile(new File(path, name));
                         tempCount++;
                         if (tempCount == thread) {
-                            downloadCallback.onPause();
                             tempCount = 0;
                             sendEmptyMessage(RESTART);
+
+                            currentSize = 0;
+                            downloadCallback.onProgress(0, totalSize, 0);
+                            Db.getInstance(context).deleteData(url);
+                            Utils.deleteFile(new File(path, name + ".temp"));
+                            Utils.deleteFile(new File(path, name));
                         }
                     }
                     break;
