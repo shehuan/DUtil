@@ -175,6 +175,8 @@ public class FileHandler {
     public void saveRangeFile(Response response) {
         prepareRangeFile(response);
 
+        IS_CANCEL = false;
+
         final File saveFile = new File(path, name);
         final File tempFile = new File(path, name + ".temp");
 

@@ -1,6 +1,7 @@
 package com.othershe.dutil.download;
 
 import android.content.Context;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Message;
 
@@ -39,6 +40,7 @@ public class DownloadManger {
     private DownloadCallback downloadCallback;
 
     private int mCurrentState = NONE;
+    private int mLastState;
 
     private int currentSize = 0;
     private int totalSize = 0;
@@ -82,13 +84,16 @@ public class DownloadManger {
                         tempCount++;
                         if (tempCount == thread) {
                             tempCount = 0;
-                            sendEmptyMessage(RESTART);
 
                             currentSize = 0;
                             downloadCallback.onProgress(0, totalSize, 0);
                             Db.getInstance(context).deleteData(url);
                             Utils.deleteFile(new File(path, name + ".temp"));
                             Utils.deleteFile(new File(path, name));
+
+                            if (mLastState != CANCEL) {
+                                sendEmptyMessage(RESTART);
+                            }
                         }
                     }
                     break;
@@ -146,28 +151,46 @@ public class DownloadManger {
         if (mCurrentState == CANCEL) {
             return;
         }
+        mCurrentState = DESTROY;
         mFileHandler.onDestroy();
     }
 
+    /**
+     * 暂停
+     */
     public void pause() {
         mFileHandler.onPause();
         mCurrentState = PAUSE;
     }
 
+    /**
+     * 继续
+     */
     public void resume() {
         if (mCurrentState != PAUSE) {
             return;
         }
+        mCurrentState = PROGRESS;
         mFileHandler.onResume();
     }
 
+    /**
+     * 取消
+     */
     public void cancel() {
-        mFileHandler.onCancel();
         mCurrentState = CANCEL;
+        mFileHandler.onCancel();
     }
 
+    /**
+     * 重新开始
+     */
     public void restart() {
         mFileHandler.onRestart();
+        if (mLastState == CANCEL) {
+            mCurrentState = PROGRESS;
+            init();
+        }
     }
 
     private void init() {

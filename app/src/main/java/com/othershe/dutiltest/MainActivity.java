@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onFinish(File file) {
+                        mTip.setText("下载完成...");
                         Uri uri = Uri.fromFile(file);
                         Intent intent = new Intent(Intent.ACTION_VIEW);
                         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
