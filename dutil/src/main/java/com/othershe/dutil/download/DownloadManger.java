@@ -45,7 +45,7 @@ public class DownloadManger {
     private boolean isDirectRestart;
     //是否有之前未下载完成的文件存在
     private boolean isFileExist;
-    //取消操作是否已删除本地文件和清除数据库
+    //取消操作是否已删除本地文件和清除数据库（每次取消、重新开始需赋值为false）
     private boolean isDataDeleted;
 
     //记录已经下载的大小
