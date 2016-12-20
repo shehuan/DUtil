@@ -8,8 +8,11 @@ import com.othershe.dutil.Utils.Utils;
 import com.othershe.dutil.data.Ranges;
 import com.othershe.dutil.net.OkHttpManager;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -83,6 +86,8 @@ public class FileHandler {
         IS_PAUSE = false;
         if (IS_SUPPORT_RANGE) {
             saveRangeFile();
+        } else {
+            saveCommonFile();
         }
     }
 
@@ -120,16 +125,18 @@ public class FileHandler {
      *
      * @param response
      */
-    public void startDownload(Response response) {
+    public boolean startDownload(Response response) {
         resetState();
 
-        if (Utils.isSupportRange(response)) {
+        if (!Utils.isSupportRange(response)) {
             IS_SUPPORT_RANGE = true;
             prepareRangeFile(response);
             saveRangeFile();
         } else {
-            saveCommonFile(response);
+            saveCommonFile();
         }
+
+        return IS_SUPPORT_RANGE;
     }
 
     /**
@@ -285,10 +292,23 @@ public class FileHandler {
 
     /**
      * 直接下载文件
-     *
-     * @param response
      */
-    private void saveCommonFile(Response response) {
+    private void saveCommonFile() {
+        OkHttpManager.getInstance().initRequest(url, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                onError(e.toString());
+            }
+
+            @Override
+            public void onResponse(Call call, final Response response) throws IOException {
+                startSaveCommonFile(response, call);
+            }
+        });
+    }
+
+
+    private void startSaveCommonFile(Response response, Call call) {
         InputStream inputStream = null;
         OutputStream outputStream = null;
 
@@ -296,7 +316,8 @@ public class FileHandler {
         onStart(fileLength);
 
         try {
-            Utils.deleteFile(new File(path, name));
+            Utils.deleteFile(path, name);
+
             File file = Utils.createFile(path, name);
             if (file == null) {
                 return;
@@ -310,20 +331,24 @@ public class FileHandler {
             while ((len = inputStream.read(buffer)) != -1) {
                 if (IS_CANCEL) {
                     handler.sendEmptyMessage(CANCEL);
-                    Utils.deleteFile(new File(path, name));
+                    call.cancel();
                     break;
                 }
 
                 outputStream.write(buffer, 0, len);
                 onProgress(len);
+                Log.e("ss", len + "==="  + buffer.length);
 
                 if (IS_DESTROY) {
-                    handler.sendEmptyMessage(PAUSE);
+                    handler.sendEmptyMessage(DESTROY);
+                    call.cancel();
                     break;
                 }
 
                 if (IS_PAUSE) {
                     handler.sendEmptyMessage(PAUSE);
+                    call.cancel();
+                    break;
                 }
             }
         } catch (Exception e) {

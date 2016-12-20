@@ -47,6 +47,8 @@ public class DownloadManger {
     private boolean isFileExist;
     //取消操作是否已删除本地文件和清除数据库（每次取消、重新开始需赋值为false）
     private boolean isDataDeleted;
+    //是否支持断点续传
+    private boolean isSupportRange = true;
 
     //记录已经下载的大小
     private int currentSize = 0;
@@ -65,7 +67,7 @@ public class DownloadManger {
             switch (mCurrentState) {
                 case START:
                     totalSize = msg.arg1;
-                    if (!isFileExist) {
+                    if (!isFileExist && isSupportRange) {
                         Db.getInstance(context).insertData(new DownloadData(url, path, name, 0, totalSize, System.currentTimeMillis()));
                     }
                     downloadCallback.onStart(currentSize, totalSize, Utils.getPercentage(currentSize, totalSize));
@@ -88,8 +90,10 @@ public class DownloadManger {
 
                             currentSize = 0;
                             downloadCallback.onProgress(0, totalSize, 0);
-                            Db.getInstance(context).deleteData(url);
-                            Utils.deleteFile(new File(path, name + ".temp"));
+                            if (isSupportRange) {
+                                Db.getInstance(context).deleteData(url);
+                                Utils.deleteFile(new File(path, name + ".temp"));
+                            }
                             Utils.deleteFile(new File(path, name));
 
                             downloadCallback.onCancel();
@@ -106,7 +110,9 @@ public class DownloadManger {
                     break;
                 case PAUSE:
                     synchronized (this) {
-                        Db.getInstance(context).updateData(currentSize, url);
+                        if (isSupportRange) {
+                            Db.getInstance(context).updateData(currentSize, url);
+                        }
                         tempCount++;
                         if (tempCount == thread) {
                             downloadCallback.onPause();
@@ -116,18 +122,28 @@ public class DownloadManger {
                     break;
                 case FINISH:
                     currentSize = 0;
-                    Utils.deleteFile(new File(path, name + ".temp"));
-                    Db.getInstance(context).deleteData(url);
+                    if (isSupportRange) {
+                        Utils.deleteFile(new File(path, name + ".temp"));
+                        Db.getInstance(context).deleteData(url);
+                    }
                     downloadCallback.onFinish(new File(path, name));
                     break;
                 case DESTROY:
                     synchronized (this) {
-                        Db.getInstance(context).updateData(currentSize, url);
+                        if (isSupportRange) {
+                            Db.getInstance(context).updateData(currentSize, url);
+                        }
                     }
                     break;
                 case ERROR:
                     downloadCallback.onError((String) msg.obj);
-                    Db.getInstance(context).deleteData(url);
+                    currentSize = 0;
+                    totalSize = 0;
+                    if (isSupportRange) {
+                        Db.getInstance(context).deleteData(url);
+                        Utils.deleteFile(new File(path, name + ".temp"));
+                    }
+                    Utils.deleteFile(new File(path, name));
                     break;
             }
         }
@@ -230,7 +246,10 @@ public class DownloadManger {
 
             @Override
             public void onResponse(Call call, final Response response) throws IOException {
-                mFileHandler.startDownload(response);
+                if (!mFileHandler.startDownload(response)) {
+                    thread = 1;
+                    isSupportRange = false;
+                }
             }
         });
     }
