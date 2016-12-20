@@ -22,6 +22,8 @@ public interface DownloadCallback extends FileCallback {
      */
     void onPause();
 
+    void onCancel();
+
     /**
      * 下载完成
      *

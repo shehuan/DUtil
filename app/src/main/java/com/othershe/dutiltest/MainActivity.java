@@ -48,15 +48,14 @@ public class MainActivity extends AppCompatActivity {
         mCancel = (TextView) findViewById(R.id.cancel);
         mRestart = (TextView) findViewById(R.id.restart);
 
-//
 //        Intent intent = new Intent(this, DownloadService.class);
 //        startService(intent);
 
         manger = DUtil.initDownload(this)
-                .url("http://1.82.215.170/imtt.dd.qq.com/16891/85B6221DE84C466310575D9FBCA453A8.apk")
+                .url("http://1.198.5.22/imtt.dd.qq.com/16891/8EEC7D8996760973B5CEA15ECA1700E3.apk")
                 .path(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath())
                 .name("test1.apk")
-                .thread(2)
+                .thread(3)
                 .build()
                 .execute(new DownloadCallback() {
 
@@ -75,6 +74,11 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onPause() {
                         mTip.setText("暂停中...");
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        mTip.setText("已取消...");
                     }
 
                     @Override

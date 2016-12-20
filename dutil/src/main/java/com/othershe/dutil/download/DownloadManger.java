@@ -1,7 +1,6 @@
 package com.othershe.dutil.download;
 
 import android.content.Context;
-import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Message;
 
@@ -39,33 +38,36 @@ public class DownloadManger {
 
     private DownloadCallback downloadCallback;
 
-    private int mCurrentState = NONE;
-    private int mLastState;
-
-    private int currentSize = 0;
-    private int totalSize = 0;
-
     private FileHandler mFileHandler;
 
-    //记录已经暂停的线程数
+    private int mCurrentState = NONE;
+    //是否没有取消，直接重新开始
+    private boolean isDirectRestart;
+    //是否有之前未下载完成的文件存在
+    private boolean isFileExist;
+    //取消操作是否已删除本地文件和清除数据库
+    private boolean isDataDeleted;
+
+    //记录已经下载的大小
+    private int currentSize = 0;
+    //记录文件总大小
+    private int totalSize = 0;
+    //记录已经暂停或取消的线程数
     private int tempCount = 0;
 
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
+
             mCurrentState = msg.what;
 
             switch (mCurrentState) {
                 case START:
                     totalSize = msg.arg1;
-                    DownloadData data = Db.getInstance(context).getData(url);
-                    if (data != null) {
-                        currentSize = data.getCurrentSize();
-                    } else {
+                    if (!isFileExist) {
                         Db.getInstance(context).insertData(new DownloadData(url, path, name, 0, totalSize, System.currentTimeMillis()));
                     }
-
                     downloadCallback.onStart(currentSize, totalSize, Utils.getPercentage(currentSize, totalSize));
                     break;
                 case PROGRESS:
@@ -77,13 +79,12 @@ public class DownloadManger {
                             sendEmptyMessage(FINISH);
                         }
                     }
-
                     break;
                 case CANCEL:
                     synchronized (this) {
-                        tempCount++;
-                        if (tempCount == thread) {
-                            tempCount = 0;
+                        if (!isDataDeleted) {
+
+                            isDataDeleted = true;
 
                             currentSize = 0;
                             downloadCallback.onProgress(0, totalSize, 0);
@@ -91,15 +92,17 @@ public class DownloadManger {
                             Utils.deleteFile(new File(path, name + ".temp"));
                             Utils.deleteFile(new File(path, name));
 
-                            if (mLastState != CANCEL) {
+                            downloadCallback.onCancel();
+
+                            if (isDirectRestart) {
                                 sendEmptyMessage(RESTART);
+                                isDirectRestart = false;
                             }
                         }
                     }
                     break;
-
                 case RESTART:
-                    init();
+                    initDownload();
                     break;
                 case PAUSE:
                     synchronized (this) {
@@ -142,58 +145,83 @@ public class DownloadManger {
         this.downloadCallback = callback;
         mFileHandler = new FileHandler(url, path, name, thread, mHandler);
 
-        init();
+        DownloadData data = Db.getInstance(context).getData(url);
+        if (data == null) {
+            initDownload();
+        } else {
+            isFileExist = true;
+            currentSize = data.getCurrentSize();
+            Message message = Message.obtain();
+            message.what = START;
+            message.arg1 = data.getTotalSize();
+            mHandler.sendMessage(message);
+        }
 
         return this;
     }
 
+    /**
+     * 下载中退出时保存数据、释放资源
+     */
     public void destroy() {
-        if (mCurrentState == CANCEL) {
+        if (mCurrentState == CANCEL || mCurrentState == PAUSE) {
             return;
         }
-        mCurrentState = DESTROY;
         mFileHandler.onDestroy();
     }
 
     /**
-     * 暂停
+     * 暂停（正在下载才可以暂停）
      */
     public void pause() {
-        mFileHandler.onPause();
-        mCurrentState = PAUSE;
+        if (mCurrentState == PROGRESS) {
+            mFileHandler.onPause();
+        }
     }
 
     /**
-     * 继续
+     * 继续（只有暂停、重新进入的状态可以执行继续下载）
      */
     public void resume() {
-        if (mCurrentState != PAUSE) {
+        if (isFileExist) {
+            isFileExist = false;
+            initDownload();
             return;
         }
-        mCurrentState = PROGRESS;
-        mFileHandler.onResume();
+
+        if (mCurrentState == PAUSE) {
+            mFileHandler.onResume();
+        }
     }
 
     /**
-     * 取消
+     * 取消（已经被取消、下载结束则不可取消）
      */
     public void cancel() {
-        mCurrentState = CANCEL;
+        if (mCurrentState == CANCEL || mCurrentState == FINISH) {
+            return;
+        }
+        isDataDeleted = false;
         mFileHandler.onCancel();
     }
 
     /**
-     * 重新开始
+     * 重新开始（所有状态都可重新下载）
      */
     public void restart() {
-        mFileHandler.onRestart();
-        if (mLastState == CANCEL) {
-            mCurrentState = PROGRESS;
-            init();
+        isDataDeleted = false;
+        if (mCurrentState == CANCEL || mCurrentState == FINISH || mCurrentState == ERROR) {
+            initDownload();
+        } else {
+            isDirectRestart = true;
+            mFileHandler.onRestart();
         }
     }
 
-    private void init() {
+    /**
+     * 开始从头下载
+     */
+    private void initDownload() {
         OkHttpManager.getInstance().initRequest(url, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -202,11 +230,7 @@ public class DownloadManger {
 
             @Override
             public void onResponse(Call call, final Response response) throws IOException {
-                if (Utils.isSupportRange(response)) {
-                    mFileHandler.saveRangeFile(response);
-                } else {
-                    mFileHandler.saveCommonFile(response);
-                }
+                mFileHandler.startDownload(response);
             }
         });
     }

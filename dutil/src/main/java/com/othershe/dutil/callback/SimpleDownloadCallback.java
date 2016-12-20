@@ -20,6 +20,11 @@ public abstract class SimpleDownloadCallback implements DownloadCallback {
     }
 
     @Override
+    public void onCancel() {
+
+    }
+
+    @Override
     public void onFinish(File file) {
 
     }

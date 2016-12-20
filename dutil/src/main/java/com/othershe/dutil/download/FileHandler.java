@@ -33,13 +33,15 @@ import static java.nio.channels.FileChannel.MapMode.READ_WRITE;
 
 public class FileHandler {
 
-    private int EACH_TEMP_SIZE = 16; //long + long = 8 + 8
+    private int EACH_TEMP_SIZE = 16;
     private int THREAD_COUNT;
     private int TEMP_FILE_TOTAL_SIZE;
 
+    private boolean IS_SUPPORT_RANGE = false;//是否支持断点续传
+
     private boolean IS_PAUSE = false; //是否暂停
     private boolean IS_CANCEL = false; //是否取消
-    private boolean IS_DESTROY = false;
+    private boolean IS_DESTROY = false; //是否退出
 
     private String path;
     private String name;
@@ -49,6 +51,7 @@ public class FileHandler {
     private List<Call> callList;
 
     public FileHandler(String url, String path, String name, int threadCount, Handler handler) {
+        //单个任务默认通过三个子线程下载
         THREAD_COUNT = threadCount == 0 ? 3 : threadCount;
         TEMP_FILE_TOTAL_SIZE = EACH_TEMP_SIZE * THREAD_COUNT;
 
@@ -78,21 +81,20 @@ public class FileHandler {
 
     public void onResume() {
         IS_PAUSE = false;
+        if (IS_SUPPORT_RANGE) {
+            saveRangeFile();
+        }
     }
 
     public void onCancel() {
-        IS_CANCEL = true;
         if (IS_PAUSE) {
-            IS_PAUSE = false;
+            handler.sendEmptyMessage(CANCEL);
+        } else {
+            IS_CANCEL = true;
         }
     }
 
     public void onRestart() {
-        if (IS_CANCEL) {
-            IS_CANCEL = false;
-            return;
-        }
-
         onCancel();
     }
 
@@ -105,8 +107,28 @@ public class FileHandler {
 
     public void onDestroy() {
         IS_DESTROY = true;
-        if (IS_PAUSE) {
-            IS_PAUSE = false;
+    }
+
+    private void resetState() {
+        IS_PAUSE = false;
+        IS_CANCEL = false;
+        IS_DESTROY = false;
+    }
+
+    /**
+     * 判断使用哪种方式下载
+     *
+     * @param response
+     */
+    public void startDownload(Response response) {
+        resetState();
+
+        if (Utils.isSupportRange(response)) {
+            IS_SUPPORT_RANGE = true;
+            prepareRangeFile(response);
+            saveRangeFile();
+        } else {
+            saveCommonFile(response);
         }
     }
 
@@ -122,8 +144,6 @@ public class FileHandler {
         long fileLength = response.body().contentLength();
 
         onStart(fileLength);
-
-        Log.e("tag", fileLength + "");
 
         try {
 
@@ -169,13 +189,8 @@ public class FileHandler {
 
     /**
      * 开始断点下载
-     *
-     * @param response
      */
-    public void saveRangeFile(Response response) {
-        prepareRangeFile(response);
-
-        IS_CANCEL = false;
+    private void saveRangeFile() {
 
         final File saveFile = new File(path, name);
         final File tempFile = new File(path, name + ".temp");
@@ -202,6 +217,15 @@ public class FileHandler {
         }
     }
 
+    /**
+     * 分段保存文件
+     *
+     * @param response
+     * @param index
+     * @param range
+     * @param saveFile
+     * @param tempFile
+     */
     private void startSaveRangeFile(Response response, int index, Ranges range, File saveFile, File tempFile) {
         RandomAccessFile saveRandomAccessFile = null;
         FileChannel saveChannel = null;
@@ -239,17 +263,13 @@ public class FileHandler {
                 if (IS_DESTROY) {
                     handler.sendEmptyMessage(DESTROY);
                     callList.get(index).cancel();
-                    Log.e("destroy" + index, readDownloadRange(tempFile).start[index] + " = " + readDownloadRange(tempFile).end[index]);
                     break;
                 }
 
                 if (IS_PAUSE) {
                     handler.sendEmptyMessage(PAUSE);
-                    Log.e("pause" + index, readDownloadRange(tempFile).start[index] + " = " + readDownloadRange(tempFile).end[index]);
-                }
-
-                while (IS_PAUSE) {
-                    Thread.currentThread().sleep(500);
+                    callList.get(index).cancel();
+                    break;
                 }
             }
         } catch (Exception e) {
@@ -268,7 +288,7 @@ public class FileHandler {
      *
      * @param response
      */
-    public void saveCommonFile(Response response) {
+    private void saveCommonFile(Response response) {
         InputStream inputStream = null;
         OutputStream outputStream = null;
 
@@ -304,10 +324,6 @@ public class FileHandler {
 
                 if (IS_PAUSE) {
                     handler.sendEmptyMessage(PAUSE);
-                }
-
-                while (IS_PAUSE) {
-
                 }
             }
         } catch (Exception e) {
