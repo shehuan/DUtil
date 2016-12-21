@@ -7,6 +7,8 @@ public class DownloadData {
     private String name;
     private int currentSize;
     private int totalSize;
+    private float percentage;
+    private int state;
     private long date;
 
     public DownloadData() {
@@ -60,6 +62,22 @@ public class DownloadData {
 
     public void setTotalSize(int totalSize) {
         this.totalSize = totalSize;
+    }
+
+    public float getPercentage() {
+        return percentage;
+    }
+
+    public void setPercentage(float percentage) {
+        this.percentage = percentage;
+    }
+
+    public int getState() {
+        return state;
+    }
+
+    public void setState(int state) {
+        this.state = state;
     }
 
     public long getDate() {

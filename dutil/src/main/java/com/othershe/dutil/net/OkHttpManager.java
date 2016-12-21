@@ -1,23 +1,20 @@
 package com.othershe.dutil.net;
 
-import com.othershe.dutil.callback.FileCallback;
-
-import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.Response;
 
 public class OkHttpManager {
     private OkHttpClient okHttpClient;
-    private FileCallback fileCallback;
 
     private OkHttpManager() {
         okHttpClient = new OkHttpClient.Builder()
-//                .addNetworkInterceptor(getInterceptor())
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(10, TimeUnit.SECONDS)
                 .build();
     }
 
@@ -60,17 +57,5 @@ public class OkHttpManager {
 
         Call call = okHttpClient.newCall(request);
         call.enqueue(callback);
-    }
-
-    private Interceptor getInterceptor() {
-        return new Interceptor() {
-            @Override
-            public Response intercept(Chain chain) throws IOException {
-                Response originalResponse = chain.proceed(chain.request());
-                return originalResponse.newBuilder()
-                        .body(new ProgressResponseBody(originalResponse.body(), fileCallback))
-                        .build();
-            }
-        };
     }
 }

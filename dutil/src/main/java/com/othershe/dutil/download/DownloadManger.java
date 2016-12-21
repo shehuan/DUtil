@@ -57,6 +57,8 @@ public class DownloadManger {
     //记录已经暂停或取消的线程数
     private int tempCount = 0;
 
+    private DownloadData downloadData;
+
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -157,7 +159,7 @@ public class DownloadManger {
         this.thread = thread;
     }
 
-    public DownloadManger execute(final DownloadCallback callback) {
+    public DownloadManger execute(DownloadCallback callback) {
         this.downloadCallback = callback;
         mFileHandler = new FileHandler(url, path, name, thread, mHandler);
 
@@ -166,12 +168,20 @@ public class DownloadManger {
             initDownload();
         } else {
             isFileExist = true;
+            isSupportRange = true;
             currentSize = data.getCurrentSize();
             Message message = Message.obtain();
             message.what = START;
             message.arg1 = data.getTotalSize();
             mHandler.sendMessage(message);
         }
+
+        return this;
+    }
+
+    public DownloadManger execute(DownloadData data) {
+        this.downloadData = data;
+        // TODO: 2016/12/21
 
         return this;
     }
@@ -226,6 +236,9 @@ public class DownloadManger {
      */
     public void restart() {
         isDataDeleted = false;
+        if (isFileExist) {
+            isFileExist = false;
+        }
         if (mCurrentState == CANCEL || mCurrentState == FINISH || mCurrentState == ERROR) {
             initDownload();
         } else {

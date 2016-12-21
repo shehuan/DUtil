@@ -8,14 +8,10 @@ import com.othershe.dutil.Utils.Utils;
 import com.othershe.dutil.data.Ranges;
 import com.othershe.dutil.net.OkHttpManager;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
@@ -45,6 +41,7 @@ public class FileHandler {
     private boolean IS_PAUSE = false; //是否暂停
     private boolean IS_CANCEL = false; //是否取消
     private boolean IS_DESTROY = false; //是否退出
+    private boolean IS_INIT = false;//是否开始过下载
 
     private String path;
     private String name;
@@ -84,15 +81,14 @@ public class FileHandler {
 
     public void onResume() {
         IS_PAUSE = false;
+        //恢复下载
         if (IS_SUPPORT_RANGE) {
             saveRangeFile();
-        } else {
-            saveCommonFile();
         }
     }
 
     public void onCancel() {
-        if (IS_PAUSE) {
+        if (IS_PAUSE || !IS_INIT) {
             handler.sendEmptyMessage(CANCEL);
         } else {
             IS_CANCEL = true;
@@ -118,6 +114,7 @@ public class FileHandler {
         IS_PAUSE = false;
         IS_CANCEL = false;
         IS_DESTROY = false;
+        IS_INIT = true;
     }
 
     /**
@@ -128,13 +125,15 @@ public class FileHandler {
     public boolean startDownload(Response response) {
         resetState();
 
-        if (!Utils.isSupportRange(response)) {
+        if (Utils.isSupportRange(response)) {
             IS_SUPPORT_RANGE = true;
             prepareRangeFile(response);
             saveRangeFile();
         } else {
             saveCommonFile();
         }
+
+        Log.e("IS_SUPPORT_RANGE", IS_SUPPORT_RANGE + "");
 
         return IS_SUPPORT_RANGE;
     }
@@ -307,13 +306,13 @@ public class FileHandler {
         });
     }
 
-
     private void startSaveCommonFile(Response response, Call call) {
         InputStream inputStream = null;
-        OutputStream outputStream = null;
+        FileOutputStream outputStream = null;
 
         long fileLength = response.body().contentLength();
         onStart(fileLength);
+        Log.e("sss", fileLength + "");
 
         try {
             Utils.deleteFile(path, name);
@@ -335,22 +334,24 @@ public class FileHandler {
                     break;
                 }
 
-                outputStream.write(buffer, 0, len);
-                onProgress(len);
-                Log.e("ss", len + "==="  + buffer.length);
-
                 if (IS_DESTROY) {
-                    handler.sendEmptyMessage(DESTROY);
                     call.cancel();
                     break;
                 }
+
+                outputStream.write(buffer, 0, len);
+                onProgress(len);
 
                 if (IS_PAUSE) {
                     handler.sendEmptyMessage(PAUSE);
-                    call.cancel();
-                    break;
+                }
+
+                while (IS_PAUSE) {
+
                 }
             }
+
+            outputStream.flush();
         } catch (Exception e) {
             onError(e.toString());
         } finally {
