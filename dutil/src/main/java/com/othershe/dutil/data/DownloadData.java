@@ -9,10 +9,17 @@ public class DownloadData {
     private int totalSize;
     private float percentage;
     private int state;
+    private int thread;
     private long date;
 
     public DownloadData() {
 
+    }
+
+    public DownloadData(String url, String path, String name) {
+        this.url = url;
+        this.path = path;
+        this.name = name;
     }
 
     public DownloadData(String url, String path, String name, int currentSize, int totalSize, long date) {
@@ -78,6 +85,14 @@ public class DownloadData {
 
     public void setState(int state) {
         this.state = state;
+    }
+
+    public int getThread() {
+        return thread;
+    }
+
+    public void setThread(int thread) {
+        this.thread = thread;
     }
 
     public long getDate() {

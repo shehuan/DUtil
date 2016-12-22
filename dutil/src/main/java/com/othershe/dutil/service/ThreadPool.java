@@ -12,9 +12,9 @@ public class ThreadPool {
     //cpu核心数
     private static final int CPU_COUNT = Runtime.getRuntime().availableProcessors();
     //核心线程数
-    private static final int CORE_POOL_SIZE = CPU_COUNT + 1;
+    private static final int CORE_POOL_SIZE = 1;
     //最大线程数
-    private static final int MAXIMUM_POOL_SIZE = 2 * CPU_COUNT + 1;
+    private static final int MAXIMUM_POOL_SIZE = 2;
     //非核心线程闲置的超时时间（秒），如果超时则会被回收
     private static final long KEEP_ALIVE = 10L;
 

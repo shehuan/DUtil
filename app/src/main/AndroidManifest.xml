@@ -18,6 +18,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".SingleTaskActivity" />
+        <activity android:name=".TaskManageActivity" />
     </application>
 
 </manifest>

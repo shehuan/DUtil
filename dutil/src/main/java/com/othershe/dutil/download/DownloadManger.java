@@ -9,6 +9,7 @@ import com.othershe.dutil.callback.DownloadCallback;
 import com.othershe.dutil.data.DownloadData;
 import com.othershe.dutil.db.Db;
 import com.othershe.dutil.net.OkHttpManager;
+import com.othershe.dutil.service.ThreadPool;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,13 +73,16 @@ public class DownloadManger {
                     if (!isFileExist && isSupportRange) {
                         Db.getInstance(context).insertData(new DownloadData(url, path, name, 0, totalSize, System.currentTimeMillis()));
                     }
-                    downloadCallback.onStart(currentSize, totalSize, Utils.getPercentage(currentSize, totalSize));
+                    if (downloadData == null) {
+                        downloadCallback.onStart(currentSize, totalSize, Utils.getPercentage(currentSize, totalSize));
+                    }
                     break;
                 case PROGRESS:
                     synchronized (this) {
                         currentSize += msg.arg1;
-                        downloadCallback.onProgress(currentSize, totalSize, Utils.getPercentage(currentSize, totalSize));
-
+                        if (downloadData == null) {
+                            downloadCallback.onProgress(currentSize, totalSize, Utils.getPercentage(currentSize, totalSize));
+                        }
                         if (currentSize == totalSize) {
                             sendEmptyMessage(FINISH);
                         }
@@ -91,14 +95,17 @@ public class DownloadManger {
                             isDataDeleted = true;
 
                             currentSize = 0;
-                            downloadCallback.onProgress(0, totalSize, 0);
+                            if (downloadData == null) {
+                                downloadCallback.onProgress(0, totalSize, 0);
+                            }
                             if (isSupportRange) {
                                 Db.getInstance(context).deleteData(url);
                                 Utils.deleteFile(new File(path, name + ".temp"));
                             }
                             Utils.deleteFile(new File(path, name));
-
-                            downloadCallback.onCancel();
+                            if (downloadData == null) {
+                                downloadCallback.onCancel();
+                            }
 
                             if (isDirectRestart) {
                                 sendEmptyMessage(RESTART);
@@ -128,7 +135,9 @@ public class DownloadManger {
                         Utils.deleteFile(new File(path, name + ".temp"));
                         Db.getInstance(context).deleteData(url);
                     }
-                    downloadCallback.onFinish(new File(path, name));
+                    if (downloadData == null) {
+                        downloadCallback.onFinish(new File(path, name));
+                    }
                     break;
                 case DESTROY:
                     synchronized (this) {
@@ -138,7 +147,9 @@ public class DownloadManger {
                     }
                     break;
                 case ERROR:
-                    downloadCallback.onError((String) msg.obj);
+                    if (downloadData == null) {
+                        downloadCallback.onError((String) msg.obj);
+                    }
                     currentSize = 0;
                     totalSize = 0;
                     if (isSupportRange) {
@@ -159,6 +170,12 @@ public class DownloadManger {
         this.thread = thread;
     }
 
+    /**
+     * 执行单个任务下载
+     *
+     * @param callback
+     * @return
+     */
     public DownloadManger execute(DownloadCallback callback) {
         this.downloadCallback = callback;
         mFileHandler = new FileHandler(url, path, name, thread, mHandler);
@@ -179,9 +196,39 @@ public class DownloadManger {
         return this;
     }
 
-    public DownloadManger execute(DownloadData data) {
+    /**
+     * 执行下载管理
+     *
+     * @param data
+     * @return
+     */
+    public DownloadManger execute(final DownloadData data) {
         this.downloadData = data;
-        // TODO: 2016/12/21
+        this.url = data.getUrl();
+        this.path = data.getPath();
+        this.name = data.getName();
+        this.thread = data.getThread();
+
+        mFileHandler = new FileHandler(url, path, name, thread, mHandler);
+
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                DownloadData oldData = Db.getInstance(context).getData(url);
+                if (oldData == null) {
+                    initDownload();
+                } else {
+                    isFileExist = true;
+                    isSupportRange = true;
+                    currentSize = data.getCurrentSize();
+                    Message message = Message.obtain();
+                    message.what = START;
+                    message.arg1 = data.getTotalSize();
+                    mHandler.sendMessage(message);
+                }
+            }
+        };
+        ThreadPool.THREAD_POOL_EXECUTOR.execute(runnable);
 
         return this;
     }
