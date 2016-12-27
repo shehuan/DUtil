@@ -9,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 
 import com.othershe.baseadapter.ViewHolder;
 import com.othershe.baseadapter.interfaces.OnItemChildClickListener;
+import com.othershe.dutil.callback.ProgressCallback;
 import com.othershe.dutil.data.DownloadData;
 import com.othershe.dutil.download.DownloadMangerPool;
 
@@ -35,7 +36,7 @@ public class TaskManageActivity extends AppCompatActivity {
         mContext = this;
 
         downloadList = (RecyclerView) findViewById(R.id.download_list);
-        List<DownloadData> datas = new ArrayList<>();
+        final List<DownloadData> datas = new ArrayList<>();
         datas.add(new DownloadData(url1, path, "欢乐斗地主.apk"));
         datas.add(new DownloadData(url2, path, "球球大作战.apk"));
         datas.add(new DownloadData(url3, path, "节奏大师.apk"));
@@ -86,5 +87,26 @@ public class TaskManageActivity extends AppCompatActivity {
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         downloadList.setLayoutManager(layoutManager);
         downloadList.setAdapter(downloadListAdapter);
+
+        DownloadMangerPool.getInstance(mContext).setOnProgressCallback(new ProgressCallback() {
+
+            @Override
+            public void onProgress(List<DownloadData> progressDatas) {
+                ArrayList<DownloadData> list = new ArrayList<DownloadData>();
+                for (DownloadData data : datas) {
+                    for (int i = 0; i <progressDatas.size(); i++) {
+                        if (data.getUrl().equals(progressDatas.get(i).getUrl())) {
+                            list.add(progressDatas.get(i));
+                            break;
+                        }
+
+                        if (i == progressDatas.size() - 1){
+                            list.add(data);
+                        }
+                    }
+                }
+                downloadListAdapter.setNewData(list);
+            }
+        });
     }
 }

@@ -75,6 +75,11 @@ public class DownloadManger {
                     }
                     if (downloadData == null) {
                         downloadCallback.onStart(currentSize, totalSize, Utils.getPercentage(currentSize, totalSize));
+                    } else {
+                        downloadData.setCurrentSize(currentSize);
+                        downloadData.setTotalSize(totalSize);
+                        downloadData.setPercentage(Utils.getPercentage(currentSize, totalSize));
+                        downloadData.setState(START);
                     }
                     break;
                 case PROGRESS:
@@ -82,6 +87,10 @@ public class DownloadManger {
                         currentSize += msg.arg1;
                         if (downloadData == null) {
                             downloadCallback.onProgress(currentSize, totalSize, Utils.getPercentage(currentSize, totalSize));
+                        } else {
+                            downloadData.setCurrentSize(currentSize);
+                            downloadData.setPercentage(Utils.getPercentage(currentSize, totalSize));
+                            downloadData.setState(PROGRESS);
                         }
                         if (currentSize == totalSize) {
                             sendEmptyMessage(FINISH);
@@ -97,6 +106,10 @@ public class DownloadManger {
                             currentSize = 0;
                             if (downloadData == null) {
                                 downloadCallback.onProgress(0, totalSize, 0);
+                            } else {
+                                downloadData.setCurrentSize(0);
+                                downloadData.setPercentage(0);
+                                downloadData.setState(CANCEL);
                             }
                             if (isSupportRange) {
                                 Db.getInstance(context).deleteData(url);
@@ -124,7 +137,11 @@ public class DownloadManger {
                         }
                         tempCount++;
                         if (tempCount == thread) {
-                            downloadCallback.onPause();
+                            if (downloadData == null) {
+                                downloadCallback.onPause();
+                            } else {
+                                downloadData.setState(PAUSE);
+                            }
                             tempCount = 0;
                         }
                     }
@@ -137,6 +154,8 @@ public class DownloadManger {
                     }
                     if (downloadData == null) {
                         downloadCallback.onFinish(new File(path, name));
+                    } else {
+                        downloadData.setState(FINISH);
                     }
                     break;
                 case DESTROY:
@@ -149,6 +168,8 @@ public class DownloadManger {
                 case ERROR:
                     if (downloadData == null) {
                         downloadCallback.onError((String) msg.obj);
+                    } else {
+                        downloadData.setState(ERROR);
                     }
                     currentSize = 0;
                     totalSize = 0;
@@ -159,17 +180,11 @@ public class DownloadManger {
                     Utils.deleteFile(new File(path, name));
                     break;
             }
+            if (downloadData != null){
+                DownloadMangerPool.getInstance(context).update(downloadData);
+            }
         }
     };
-
-    /**
-     * 获得下载数据
-     *
-     * @return
-     */
-    public DownloadData getDownloadData() {
-        return downloadData;
-    }
 
     public DownloadManger(Context context, String url, String path, String name, int thread) {
         this.context = context;

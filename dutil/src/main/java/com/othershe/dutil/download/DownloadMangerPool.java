@@ -5,7 +5,9 @@ import android.content.Context;
 import com.othershe.dutil.callback.ProgressCallback;
 import com.othershe.dutil.data.DownloadData;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DownloadMangerPool {
@@ -107,5 +109,17 @@ public class DownloadMangerPool {
      */
     public void setOnProgressCallback(ProgressCallback progressCallback) {
         this.progressCallback = progressCallback;
+    }
+
+    public synchronized void update(DownloadData data) {
+        String url = data.getUrl();
+        downloadDataMap.remove(url);
+        downloadDataMap.put(url, data);
+
+        List<DownloadData> datas = new ArrayList<>();
+        for (DownloadData downloadData : downloadDataMap.values()) {
+            datas.add(downloadData);
+        }
+        progressCallback.onProgress(datas);
     }
 }
