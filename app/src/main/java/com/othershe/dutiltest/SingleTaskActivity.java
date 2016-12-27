@@ -60,6 +60,7 @@ public class SingleTaskActivity extends AppCompatActivity {
                     @Override
                     public void onStart(long currentSize, long totalSize, float progress) {
                         mTip.setText(name + "：准备下载中...");
+                        progressBar.setProgress((int) progress);
                         mProgress.setText(Utils.formatSize(currentSize) + " / " + Utils.formatSize(totalSize) + "--------" + progress + "%");
                     }
 

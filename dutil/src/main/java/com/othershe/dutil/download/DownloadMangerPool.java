@@ -2,6 +2,7 @@ package com.othershe.dutil.download;
 
 import android.content.Context;
 
+import com.othershe.dutil.callback.ProgressCallback;
 import com.othershe.dutil.data.DownloadData;
 
 import java.util.HashMap;
@@ -15,6 +16,8 @@ public class DownloadMangerPool {
     private Map<String, DownloadManger> mangerMap = new HashMap<>();
 
     private Context context;
+
+    private ProgressCallback progressCallback;
 
     private DownloadMangerPool(Context context) {
         this.context = context;
@@ -95,5 +98,14 @@ public class DownloadMangerPool {
      */
     public void restart(String url) {
         getDownloadManager(url).restart();
+    }
+
+    /**
+     * 设置下载列表的进度监听
+     *
+     * @param progressCallback
+     */
+    public void setOnProgressCallback(ProgressCallback progressCallback) {
+        this.progressCallback = progressCallback;
     }
 }

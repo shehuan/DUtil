@@ -162,6 +162,15 @@ public class DownloadManger {
         }
     };
 
+    /**
+     * 获得下载数据
+     *
+     * @return
+     */
+    public DownloadData getDownloadData() {
+        return downloadData;
+    }
+
     public DownloadManger(Context context, String url, String path, String name, int thread) {
         this.context = context;
         this.url = url;
@@ -245,6 +254,7 @@ public class DownloadManger {
 
     /**
      * 暂停（正在下载才可以暂停）
+     * 如果文件不支持断点续传则不能进行暂停操作
      */
     public void pause() {
         if (mCurrentState == PROGRESS) {
@@ -254,6 +264,7 @@ public class DownloadManger {
 
     /**
      * 继续（只有暂停、重新进入的状态可以执行继续下载）
+     * 如果文件不支持断点续传则不能进行继续操作
      */
     public void resume() {
         if (isFileExist) {

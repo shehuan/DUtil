@@ -341,14 +341,6 @@ public class FileHandler {
 
                 outputStream.write(buffer, 0, len);
                 onProgress(len);
-
-                if (IS_PAUSE) {
-                    handler.sendEmptyMessage(PAUSE);
-                }
-
-                while (IS_PAUSE) {
-
-                }
             }
 
             outputStream.flush();
