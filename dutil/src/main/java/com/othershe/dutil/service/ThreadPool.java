@@ -13,9 +13,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ThreadPool {
     //可同时下载的任务数（核心线程数）
-    private static final int CORE_POOL_SIZE = 3;
+    private static final int CORE_POOL_SIZE = 2;
     //缓存队列的大小（最大线程数）
-    private static final int MAXIMUM_POOL_SIZE = 100;
+    private static final int MAXIMUM_POOL_SIZE = 10;
     //非核心线程闲置的超时时间（秒），如果超时则会被回收
     private static final long KEEP_ALIVE = 10L;
 

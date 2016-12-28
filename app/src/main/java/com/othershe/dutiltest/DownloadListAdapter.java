@@ -16,7 +16,7 @@ public class DownloadListAdapter extends CommonBaseAdapter<DownloadData> {
     }
 
     @Override
-    protected void convert(ViewHolder holder, DownloadData data) {
+    protected void convert(ViewHolder holder, final DownloadData data) {
         holder.setText(R.id.name, data.getName());
         holder.setText(R.id.download_size, Utils.formatSize(data.getCurrentSize()) + "/" + Utils.formatSize(data.getTotalSize()));
         holder.setText(R.id.percentage, data.getPercentage() + "%");

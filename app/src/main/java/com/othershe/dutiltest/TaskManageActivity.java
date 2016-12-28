@@ -1,11 +1,15 @@
 package com.othershe.dutiltest;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import com.othershe.baseadapter.ViewHolder;
 import com.othershe.baseadapter.interfaces.OnItemChildClickListener;
@@ -20,6 +24,7 @@ public class TaskManageActivity extends AppCompatActivity {
     private String url1 = "http://1.82.242.43/imtt.dd.qq.com/16891/DC9E925209B19E7913477E7A0CCE6E52.apk";//欢乐斗地主
     private String url2 = "http://117.23.1.170/imtt.dd.qq.com/16891/37F5264B6EDC71F9A7888B5017A5A6C1.apk";//球球大作战
     private String url3 = "http://117.23.1.172/imtt.dd.qq.com/16891/8AFB093FEFF9DE2A81EDC28EB1AF89C6.apk";//节奏大师
+    private String url4 = "http://1.82.215.170/imtt.dd.qq.com/16891/85B6221DE84C466310575D9FBCA453A8.apk";  //天天酷跑
 
     private String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
 
@@ -47,7 +52,9 @@ public class TaskManageActivity extends AppCompatActivity {
         downloadListAdapter.setOnItemChildClickListener(R.id.start, new OnItemChildClickListener<DownloadData>() {
             @Override
             public void onItemChildClick(ViewHolder viewHolder, DownloadData data, int position) {
-                DownloadMangerPool.getInstance(mContext).start(data);
+                DownloadMangerPool.getInstance(mContext).start(datas.get(0));
+                DownloadMangerPool.getInstance(mContext).start(datas.get(1));
+                DownloadMangerPool.getInstance(mContext).start(datas.get(2));
             }
         });
 
@@ -92,21 +99,39 @@ public class TaskManageActivity extends AppCompatActivity {
 
             @Override
             public void onProgress(List<DownloadData> progressDatas) {
-                ArrayList<DownloadData> list = new ArrayList<DownloadData>();
                 for (DownloadData data : datas) {
-                    for (int i = 0; i <progressDatas.size(); i++) {
+                    for (int i = 0; i < progressDatas.size(); i++) {
                         if (data.getUrl().equals(progressDatas.get(i).getUrl())) {
-                            list.add(progressDatas.get(i));
+                            data.setCurrentSize(progressDatas.get(i).getCurrentSize());
+                            data.setPercentage(progressDatas.get(i).getPercentage());
+                            data.setTotalSize(progressDatas.get(i).getTotalSize());
                             break;
-                        }
-
-                        if (i == progressDatas.size() - 1){
-                            list.add(data);
                         }
                     }
                 }
-                downloadListAdapter.setNewData(list);
+
+                downloadListAdapter.notifyDataSetChanged();
+
+//                for (DownloadData data : progressDatas) {
+//                    Log.e(data.getName(), data.getPercentage() + "");
+//                }
             }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.task_detail_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.task_detail) {
+
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

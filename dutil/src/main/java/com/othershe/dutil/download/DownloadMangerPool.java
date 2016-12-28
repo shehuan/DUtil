@@ -36,7 +36,7 @@ public class DownloadMangerPool {
         return instance;
     }
 
-    public void start(final DownloadData data) {
+    public void start(DownloadData data) {
 
         if (data == null) {
             return;
@@ -44,16 +44,16 @@ public class DownloadMangerPool {
         final String url = data.getUrl();
         if (!downloadDataMap.containsKey(url)) {
             downloadDataMap.put(url, data);
+
+            DownloadManger manger = new DBuilder(context)
+                    .url(data.getUrl())
+                    .path(data.getPath())
+                    .name(data.getName())
+                    .build()
+                    .execute(data);
+
+            mangerMap.put(url, manger);
         }
-
-        DownloadManger manger = new DBuilder(context)
-                .url(data.getUrl())
-                .path(data.getPath())
-                .name(data.getName())
-                .build()
-                .execute(data);
-
-        mangerMap.put(url, manger);
     }
 
     /**
@@ -113,7 +113,7 @@ public class DownloadMangerPool {
 
     public synchronized void update(DownloadData data) {
         String url = data.getUrl();
-        downloadDataMap.remove(url);
+
         downloadDataMap.put(url, data);
 
         List<DownloadData> datas = new ArrayList<>();

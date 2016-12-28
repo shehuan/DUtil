@@ -3,6 +3,7 @@ package com.othershe.dutil.download;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 import com.othershe.dutil.Utils.Utils;
 import com.othershe.dutil.callback.DownloadCallback;
@@ -79,7 +80,6 @@ public class DownloadManger {
                         downloadData.setCurrentSize(currentSize);
                         downloadData.setTotalSize(totalSize);
                         downloadData.setPercentage(Utils.getPercentage(currentSize, totalSize));
-                        downloadData.setState(START);
                     }
                     break;
                 case PROGRESS:
@@ -90,7 +90,6 @@ public class DownloadManger {
                         } else {
                             downloadData.setCurrentSize(currentSize);
                             downloadData.setPercentage(Utils.getPercentage(currentSize, totalSize));
-                            downloadData.setState(PROGRESS);
                         }
                         if (currentSize == totalSize) {
                             sendEmptyMessage(FINISH);
@@ -109,7 +108,6 @@ public class DownloadManger {
                             } else {
                                 downloadData.setCurrentSize(0);
                                 downloadData.setPercentage(0);
-                                downloadData.setState(CANCEL);
                             }
                             if (isSupportRange) {
                                 Db.getInstance(context).deleteData(url);
@@ -139,8 +137,6 @@ public class DownloadManger {
                         if (tempCount == thread) {
                             if (downloadData == null) {
                                 downloadCallback.onPause();
-                            } else {
-                                downloadData.setState(PAUSE);
                             }
                             tempCount = 0;
                         }
@@ -154,8 +150,6 @@ public class DownloadManger {
                     }
                     if (downloadData == null) {
                         downloadCallback.onFinish(new File(path, name));
-                    } else {
-                        downloadData.setState(FINISH);
                     }
                     break;
                 case DESTROY:
@@ -168,8 +162,6 @@ public class DownloadManger {
                 case ERROR:
                     if (downloadData == null) {
                         downloadCallback.onError((String) msg.obj);
-                    } else {
-                        downloadData.setState(ERROR);
                     }
                     currentSize = 0;
                     totalSize = 0;
@@ -180,7 +172,8 @@ public class DownloadManger {
                     Utils.deleteFile(new File(path, name));
                     break;
             }
-            if (downloadData != null){
+            if (downloadData != null) {
+                downloadData.setState(mCurrentState);
                 DownloadMangerPool.getInstance(context).update(downloadData);
             }
         }
@@ -235,24 +228,29 @@ public class DownloadManger {
 
         mFileHandler = new FileHandler(url, path, name, thread, mHandler);
 
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                DownloadData oldData = Db.getInstance(context).getData(url);
-                if (oldData == null) {
-                    initDownload();
-                } else {
-                    isFileExist = true;
-                    isSupportRange = true;
-                    currentSize = data.getCurrentSize();
-                    Message message = Message.obtain();
-                    message.what = START;
-                    message.arg1 = data.getTotalSize();
-                    mHandler.sendMessage(message);
-                }
-            }
-        };
-        ThreadPool.THREAD_POOL_EXECUTOR.execute(runnable);
+//        Runnable runnable = new Runnable() {
+//            @Override
+//            public void run() {
+//                Log.e("thread_id000", Thread.currentThread().getName());
+//
+//                Log.e("thread_id111", Thread.currentThread().getName());
+//            }
+//        };
+//        ThreadPool.THREAD_POOL_EXECUTOR.execute(runnable);
+
+        DownloadData oldData = Db.getInstance(context).getData(url);
+        if (oldData == null) {
+            initDownload();
+        } else {
+            isFileExist = true;
+            isSupportRange = true;
+            currentSize = data.getCurrentSize();
+            Message message = Message.obtain();
+            message.what = START;
+            message.arg1 = data.getTotalSize();
+            mHandler.sendMessage(message);
+        }
+
 
         return this;
     }
