@@ -1,11 +1,13 @@
 package com.othershe.dutil.net;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Response;
 
 public class OkHttpManager {
     private OkHttpClient okHttpClient;
@@ -46,6 +48,22 @@ public class OkHttpManager {
 
         Call call = okHttpClient.newCall(request);
         call.enqueue(callback);
+    }
+
+    /**
+     * 同步请求
+     *
+     * @param url
+     * @return
+     * @throws IOException
+     */
+    public Response initRequest(String url) throws IOException {
+        Request request = new Request.Builder()
+                .url(url)
+                .header("Range", "bytes=0-")
+                .build();
+
+        return okHttpClient.newCall(request).execute();
     }
 
     public void initRequest(String url, final Callback callback, String ifRange) {

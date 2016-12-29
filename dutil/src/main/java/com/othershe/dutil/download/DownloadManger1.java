@@ -8,14 +8,9 @@ import com.othershe.dutil.Utils.Utils;
 import com.othershe.dutil.callback.DownloadCallback;
 import com.othershe.dutil.data.DownloadData;
 import com.othershe.dutil.db.Db;
-import com.othershe.dutil.net.OkHttpManager;
+import com.othershe.dutil.service.ThreadPool;
 
 import java.io.File;
-import java.io.IOException;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
 
 import static com.othershe.dutil.data.Consts.CANCEL;
 import static com.othershe.dutil.data.Consts.DESTROY;
@@ -27,18 +22,18 @@ import static com.othershe.dutil.data.Consts.PROGRESS;
 import static com.othershe.dutil.data.Consts.RESTART;
 import static com.othershe.dutil.data.Consts.START;
 
-public class DownloadManger {
+public class DownloadManger1 {
 
     private String url;
     private String path;
     private String name;
-    private int childTaskCount;
+    private int childTaskCount = 1;
 
     private Context context;
 
     private DownloadCallback downloadCallback;
 
-    private FileHandler mFileHandler;
+    private FileTask mFileHandler;
 
     private int mCurrentState = NONE;
     //是否没有取消，直接重新开始
@@ -48,7 +43,7 @@ public class DownloadManger {
     //取消操作是否已删除本地文件和清除数据库（每次取消、重新开始需赋值为false）
     private boolean isDataDeleted;
     //是否支持断点续传
-    private boolean isSupportRange = true;
+    private boolean isSupportRange;
 
     //记录已经下载的大小
     private int currentSize = 0;
@@ -69,26 +64,19 @@ public class DownloadManger {
             switch (mCurrentState) {
                 case START:
                     totalSize = msg.arg1;
-                    if (!isFileExist && isSupportRange) {
+                    currentSize = msg.arg2;
+                    isSupportRange = (boolean) msg.obj;
+                    if (isSupportRange) {
                         Db.getInstance(context).insertData(new DownloadData(url, path, name, 0, totalSize, System.currentTimeMillis()));
-                    }
-                    if (downloadData == null) {
-                        downloadCallback.onStart(currentSize, totalSize, Utils.getPercentage(currentSize, totalSize));
                     } else {
-                        downloadData.setCurrentSize(currentSize);
-                        downloadData.setTotalSize(totalSize);
-                        downloadData.setPercentage(Utils.getPercentage(currentSize, totalSize));
+                        childTaskCount = 1;
                     }
+                    downloadCallback.onStart(currentSize, totalSize, Utils.getPercentage(currentSize, totalSize));
                     break;
                 case PROGRESS:
                     synchronized (this) {
                         currentSize += msg.arg1;
-                        if (downloadData == null) {
-                            downloadCallback.onProgress(currentSize, totalSize, Utils.getPercentage(currentSize, totalSize));
-                        } else {
-                            downloadData.setCurrentSize(currentSize);
-                            downloadData.setPercentage(Utils.getPercentage(currentSize, totalSize));
-                        }
+                        downloadCallback.onProgress(currentSize, totalSize, Utils.getPercentage(currentSize, totalSize));
                         if (currentSize == totalSize) {
                             sendEmptyMessage(FINISH);
                         }
@@ -99,22 +87,18 @@ public class DownloadManger {
                         if (!isDataDeleted) {
 
                             isDataDeleted = true;
-
                             currentSize = 0;
-                            if (downloadData == null) {
-                                downloadCallback.onProgress(0, totalSize, 0);
-                            } else {
-                                downloadData.setCurrentSize(0);
-                                downloadData.setPercentage(0);
-                            }
+
+                            downloadCallback.onProgress(0, totalSize, 0);
+
                             if (isSupportRange) {
                                 Db.getInstance(context).deleteData(url);
                                 Utils.deleteFile(new File(path, name + ".temp"));
                             }
+
                             Utils.deleteFile(new File(path, name));
-                            if (downloadData == null) {
-                                downloadCallback.onCancel();
-                            }
+
+                            downloadCallback.onCancel();
 
                             if (isDirectRestart) {
                                 sendEmptyMessage(RESTART);
@@ -124,7 +108,7 @@ public class DownloadManger {
                     }
                     break;
                 case RESTART:
-                    initDownload();
+                    start();
                     break;
                 case PAUSE:
                     synchronized (this) {
@@ -141,14 +125,11 @@ public class DownloadManger {
                     }
                     break;
                 case FINISH:
-                    currentSize = 0;
                     if (isSupportRange) {
                         Utils.deleteFile(new File(path, name + ".temp"));
                         Db.getInstance(context).deleteData(url);
                     }
-                    if (downloadData == null) {
-                        downloadCallback.onFinish(new File(path, name));
-                    }
+                    downloadCallback.onFinish(new File(path, name));
                     break;
                 case DESTROY:
                     synchronized (this) {
@@ -158,31 +139,23 @@ public class DownloadManger {
                     }
                     break;
                 case ERROR:
-                    if (downloadData == null) {
-                        downloadCallback.onError((String) msg.obj);
-                    }
                     currentSize = 0;
                     totalSize = 0;
                     if (isSupportRange) {
-                        Db.getInstance(context).deleteData(url);
-                        Utils.deleteFile(new File(path, name + ".temp"));
+                        Db.getInstance(context).updateData(currentSize, url);
                     }
-                    Utils.deleteFile(new File(path, name));
+                    downloadCallback.onError((String) msg.obj);
                     break;
-            }
-            if (downloadData != null) {
-                downloadData.setState(mCurrentState);
-                DownloadMangerPool.getInstance(context).update(downloadData);
             }
         }
     };
 
-    public DownloadManger(Context context, String url, String path, String name, int childTaskCount) {
+    public DownloadManger1(Context context, String url, String path, String name, int childTaskCount) {
         this.context = context;
         this.url = url;
         this.path = path;
         this.name = name;
-        this.childTaskCount = childTaskCount;
+        this.childTaskCount = childTaskCount == 0 ? 3 : childTaskCount;//默认每个任务分割成3个异步任务
     }
 
     /**
@@ -191,13 +164,13 @@ public class DownloadManger {
      * @param callback
      * @return
      */
-    public DownloadManger execute(DownloadCallback callback) {
+    public DownloadManger1 execute(DownloadCallback callback) {
         this.downloadCallback = callback;
-        mFileHandler = new FileHandler(url, path, name, childTaskCount, mHandler);
+        mFileHandler = new FileTask(context, url, path, name, childTaskCount, mHandler);
 
         DownloadData data = Db.getInstance(context).getData(url);
         if (data == null) {
-            initDownload();
+            start();
         } else {
             isFileExist = true;
             isSupportRange = true;
@@ -217,18 +190,18 @@ public class DownloadManger {
      * @param data
      * @return
      */
-    public DownloadManger execute(final DownloadData data) {
+    public DownloadManger1 execute(final DownloadData data) {
         this.downloadData = data;
         this.url = data.getUrl();
         this.path = data.getPath();
         this.name = data.getName();
         this.childTaskCount = data.getThread();
 
-        mFileHandler = new FileHandler(url, path, name, childTaskCount, mHandler);
+        mFileHandler = new FileTask(context, url, path, name, childTaskCount, mHandler);
 
         DownloadData oldData = Db.getInstance(context).getData(url);
         if (oldData == null) {
-            initDownload();
+            start();
         } else {
             isFileExist = true;
             isSupportRange = true;
@@ -268,14 +241,8 @@ public class DownloadManger {
      * 如果文件不支持断点续传则不能进行继续操作
      */
     public void resume() {
-        if (isFileExist) {
-            isFileExist = false;
-            initDownload();
-            return;
-        }
-
-        if (mCurrentState == PAUSE) {
-            mFileHandler.onResume();
+        if (isSupportRange) {
+            start();
         }
     }
 
@@ -286,7 +253,6 @@ public class DownloadManger {
         if (mCurrentState == CANCEL || mCurrentState == FINISH) {
             return;
         }
-        isDataDeleted = false;
         mFileHandler.onCancel();
     }
 
@@ -294,35 +260,19 @@ public class DownloadManger {
      * 重新开始（所有状态都可重新下载）
      */
     public void restart() {
-        isDataDeleted = false;
-        if (isFileExist) {
-            isFileExist = false;
-        }
-        if (mCurrentState == CANCEL || mCurrentState == FINISH || mCurrentState == ERROR) {
-            initDownload();
+        if (mCurrentState == CANCEL || mCurrentState == FINISH) {
+            mHandler.sendEmptyMessage(RESTART);
         } else {
             isDirectRestart = true;
-            mFileHandler.onRestart();
+            mFileHandler.onCancel();
         }
     }
 
     /**
      * 开始从头下载
      */
-    private void initDownload() {
-        OkHttpManager.getInstance().initRequest(url, new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                mFileHandler.onError(e.toString());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!mFileHandler.startDownload(response)) {
-                    childTaskCount = 1;
-                    isSupportRange = false;
-                }
-            }
-        });
+    private void start() {
+        FileTask task = new FileTask(context, url, path, name, childTaskCount, mHandler);
+        ThreadPool.THREAD_POOL_EXECUTOR.execute(task);
     }
 }
