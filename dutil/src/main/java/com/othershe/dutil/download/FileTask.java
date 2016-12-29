@@ -66,6 +66,7 @@ public class FileTask implements Runnable {
 
     @Override
     public void run() {
+        Log.e("thread_name", Thread.currentThread().getName());
         try {
             Response response = OkHttpManager.getInstance().initRequest(url);
             if (response != null && response.isSuccessful()) {
@@ -93,8 +94,8 @@ public class FileTask implements Runnable {
             DownloadData data = Db.getInstance(context).getData(url);
             if (saveFile.exists() && tempFile.exists() && data != null) {
                 //如果存在下载记录，则更改threadCount
-                TEMP_FILE_TOTAL_SIZE = EACH_TEMP_SIZE * data.getThread();
-                onStart(data.getTotalSize(), data.getCurrentSize(), false);
+                TEMP_FILE_TOTAL_SIZE = EACH_TEMP_SIZE * data.getChildTaskCount();
+                onStart(data.getTotalSize(), data.getCurrentSize(), true);
                 return;
             }
 
@@ -163,7 +164,7 @@ public class FileTask implements Runnable {
             callList.add(call);
         }
 
-        while (tempChildTaskCount < childTaskCount && !IS_PAUSE && !IS_CANCEL && !IS_DESTROY) {
+        while (tempChildTaskCount < childTaskCount) {
             //由于每个文件采用多个异步操作进行，发起多个异步操作后该线程已经结束，但对应文件并未下载完成，
             //则会出现线程池中同时下载的文件数量超过设定的核心线程数，所以考虑只有当前线程的所有异步任务结束后，
             //才能使结束当前线程。
@@ -234,6 +235,7 @@ public class FileTask implements Runnable {
             Utils.close(inputStream);
             Utils.close(tempRandomAccessFile);
             Utils.close(tempChannel);
+            Utils.close(response);
         }
     }
 

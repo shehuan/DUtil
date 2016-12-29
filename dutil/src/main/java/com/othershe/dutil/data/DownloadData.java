@@ -9,7 +9,7 @@ public class DownloadData {
     private int totalSize;
     private float percentage;
     private int state;
-    private int thread;
+    private int childTaskCount;
     private long date;
 
     public DownloadData() {
@@ -22,9 +22,10 @@ public class DownloadData {
         this.name = name;
     }
 
-    public DownloadData(String url, String path, String name, int currentSize, int totalSize, long date) {
+    public DownloadData(String url, String path, int childTaskCount, String name, int currentSize, int totalSize, long date) {
         this.url = url;
         this.path = path;
+        this.childTaskCount = childTaskCount;
         this.currentSize = currentSize;
         this.name = name;
         this.totalSize = totalSize;
@@ -87,12 +88,12 @@ public class DownloadData {
         this.state = state;
     }
 
-    public int getThread() {
-        return thread;
+    public int getChildTaskCount() {
+        return childTaskCount;
     }
 
-    public void setThread(int thread) {
-        this.thread = thread;
+    public void setChildTaskCount(int childTaskCount) {
+        this.childTaskCount = childTaskCount;
     }
 
     public long getDate() {

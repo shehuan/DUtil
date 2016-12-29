@@ -27,23 +27,21 @@ public class DownloadManger1 {
     private String url;
     private String path;
     private String name;
-    private int childTaskCount = 1;
+    private int childTaskCount;
 
     private Context context;
 
     private DownloadCallback downloadCallback;
 
-    private FileTask mFileHandler;
+    private FileTask mFileTask;
 
     private int mCurrentState = NONE;
     //是否没有取消，直接重新开始
-    private boolean isDirectRestart;
-    //是否有之前未下载完成的文件存在
-    private boolean isFileExist;
-    //取消操作是否已删除本地文件和清除数据库（每次取消、重新开始需赋值为false）
-    private boolean isDataDeleted;
+    private boolean isRestart;
     //是否支持断点续传
     private boolean isSupportRange;
+    //
+    private boolean isThreadEnd;
 
     //记录已经下载的大小
     private int currentSize = 0;
@@ -51,8 +49,6 @@ public class DownloadManger1 {
     private int totalSize = 0;
     //记录已经暂停或取消的线程数
     private int tempChildTaskCount = 0;
-
-    private DownloadData downloadData;
 
     private Handler mHandler = new Handler() {
         @Override
@@ -66,10 +62,10 @@ public class DownloadManger1 {
                     totalSize = msg.arg1;
                     currentSize = msg.arg2;
                     isSupportRange = (boolean) msg.obj;
-                    if (isSupportRange) {
-                        Db.getInstance(context).insertData(new DownloadData(url, path, name, 0, totalSize, System.currentTimeMillis()));
-                    } else {
+                    if (!isSupportRange) {
                         childTaskCount = 1;
+                    } else if (currentSize == 0) {
+                        Db.getInstance(context).insertData(new DownloadData(url, path, childTaskCount, name, currentSize, totalSize, System.currentTimeMillis()));
                     }
                     downloadCallback.onStart(currentSize, totalSize, Utils.getPercentage(currentSize, totalSize));
                     break;
@@ -84,25 +80,22 @@ public class DownloadManger1 {
                     break;
                 case CANCEL:
                     synchronized (this) {
-                        if (!isDataDeleted) {
-
-                            isDataDeleted = true;
-                            currentSize = 0;
-
+                        tempChildTaskCount++;
+                        if (tempChildTaskCount == childTaskCount) {
+                            tempChildTaskCount = 0;
                             downloadCallback.onProgress(0, totalSize, 0);
-
+                            currentSize = 0;
                             if (isSupportRange) {
                                 Db.getInstance(context).deleteData(url);
                                 Utils.deleteFile(new File(path, name + ".temp"));
                             }
-
                             Utils.deleteFile(new File(path, name));
 
                             downloadCallback.onCancel();
 
-                            if (isDirectRestart) {
+                            if (isRestart) {
                                 sendEmptyMessage(RESTART);
-                                isDirectRestart = false;
+                                isRestart = false;
                             }
                         }
                     }
@@ -117,9 +110,7 @@ public class DownloadManger1 {
                         }
                         tempChildTaskCount++;
                         if (tempChildTaskCount == childTaskCount) {
-                            if (downloadData == null) {
-                                downloadCallback.onPause();
-                            }
+                            downloadCallback.onPause();
                             tempChildTaskCount = 0;
                         }
                     }
@@ -139,8 +130,6 @@ public class DownloadManger1 {
                     }
                     break;
                 case ERROR:
-                    currentSize = 0;
-                    totalSize = 0;
                     if (isSupportRange) {
                         Db.getInstance(context).updateData(currentSize, url);
                     }
@@ -166,21 +155,7 @@ public class DownloadManger1 {
      */
     public DownloadManger1 execute(DownloadCallback callback) {
         this.downloadCallback = callback;
-        mFileHandler = new FileTask(context, url, path, name, childTaskCount, mHandler);
-
-        DownloadData data = Db.getInstance(context).getData(url);
-        if (data == null) {
-            start();
-        } else {
-            isFileExist = true;
-            isSupportRange = true;
-            currentSize = data.getCurrentSize();
-            Message message = Message.obtain();
-            message.what = START;
-            message.arg1 = data.getTotalSize();
-            mHandler.sendMessage(message);
-        }
-
+        start();
         return this;
     }
 
@@ -191,27 +166,12 @@ public class DownloadManger1 {
      * @return
      */
     public DownloadManger1 execute(final DownloadData data) {
-        this.downloadData = data;
         this.url = data.getUrl();
         this.path = data.getPath();
         this.name = data.getName();
-        this.childTaskCount = data.getThread();
+        this.childTaskCount = data.getChildTaskCount();
 
-        mFileHandler = new FileTask(context, url, path, name, childTaskCount, mHandler);
-
-        DownloadData oldData = Db.getInstance(context).getData(url);
-        if (oldData == null) {
-            start();
-        } else {
-            isFileExist = true;
-            isSupportRange = true;
-            currentSize = data.getCurrentSize();
-            Message message = Message.obtain();
-            message.what = START;
-            message.arg1 = data.getTotalSize();
-            mHandler.sendMessage(message);
-        }
-
+        mFileTask = new FileTask(context, url, path, name, childTaskCount, mHandler);
 
         return this;
     }
@@ -223,7 +183,7 @@ public class DownloadManger1 {
         if (mCurrentState == CANCEL || mCurrentState == PAUSE) {
             return;
         }
-        mFileHandler.onDestroy();
+        mFileTask.onDestroy();
     }
 
     /**
@@ -232,7 +192,7 @@ public class DownloadManger1 {
      */
     public void pause() {
         if (mCurrentState == PROGRESS) {
-            mFileHandler.onPause();
+            mFileTask.onPause();
         }
     }
 
@@ -241,7 +201,7 @@ public class DownloadManger1 {
      * 如果文件不支持断点续传则不能进行继续操作
      */
     public void resume() {
-        if (isSupportRange) {
+        if (isSupportRange && mCurrentState == PAUSE) {
             start();
         }
     }
@@ -250,21 +210,25 @@ public class DownloadManger1 {
      * 取消（已经被取消、下载结束则不可取消）
      */
     public void cancel() {
-        if (mCurrentState == CANCEL || mCurrentState == FINISH) {
-            return;
+        if (mCurrentState == PROGRESS) {
+            mFileTask.onCancel();
+        } else if (mCurrentState == PAUSE || mCurrentState == ERROR) {
+            mHandler.sendEmptyMessage(CANCEL);
         }
-        mFileHandler.onCancel();
     }
 
     /**
      * 重新开始（所有状态都可重新下载）
      */
     public void restart() {
-        if (mCurrentState == CANCEL || mCurrentState == FINISH) {
-            mHandler.sendEmptyMessage(RESTART);
+        if (mCurrentState == PROGRESS) {
+            isRestart = true;
+            mFileTask.onCancel();
+        } else if (mCurrentState == PAUSE || mCurrentState == ERROR) {
+            isRestart = true;
+            mHandler.sendEmptyMessage(CANCEL);
         } else {
-            isDirectRestart = true;
-            mFileHandler.onCancel();
+            mHandler.sendEmptyMessage(RESTART);
         }
     }
 
@@ -272,7 +236,7 @@ public class DownloadManger1 {
      * 开始从头下载
      */
     private void start() {
-        FileTask task = new FileTask(context, url, path, name, childTaskCount, mHandler);
-        ThreadPool.THREAD_POOL_EXECUTOR.execute(task);
+        mFileTask = new FileTask(context, url, path, name, childTaskCount, mHandler);
+        ThreadPool.THREAD_POOL_EXECUTOR.execute(mFileTask);
     }
 }

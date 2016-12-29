@@ -44,7 +44,7 @@ public class DBuilder {
         return this;
     }
 
-    public DownloadManger build() {
-        return new DownloadManger(context, url, path, name, thread);
+    public DownloadManger1 build() {
+        return new DownloadManger1(context, url, path, name, thread);
     }
 }

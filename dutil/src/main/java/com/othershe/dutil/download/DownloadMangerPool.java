@@ -15,7 +15,7 @@ public class DownloadMangerPool {
     private volatile static DownloadMangerPool instance;
 
     private Map<String, DownloadData> downloadDataMap = new HashMap<>();
-    private Map<String, DownloadManger> mangerMap = new HashMap<>();
+    private Map<String, DownloadManger1> mangerMap = new HashMap<>();
 
     private Context context;
 
@@ -45,7 +45,7 @@ public class DownloadMangerPool {
         if (!downloadDataMap.containsKey(url)) {
             downloadDataMap.put(url, data);
 
-            DownloadManger manger = new DBuilder(context)
+            DownloadManger1 manger = new DBuilder(context)
                     .url(data.getUrl())
                     .path(data.getPath())
                     .name(data.getName())
@@ -62,7 +62,7 @@ public class DownloadMangerPool {
      * @param url
      * @return
      */
-    public DownloadManger getDownloadManager(String url) {
+    public DownloadManger1 getDownloadManager(String url) {
         return mangerMap.get(url);
     }
 

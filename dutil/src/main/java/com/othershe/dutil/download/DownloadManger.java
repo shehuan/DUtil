@@ -70,7 +70,7 @@ public class DownloadManger {
                 case START:
                     totalSize = msg.arg1;
                     if (!isFileExist && isSupportRange) {
-                        Db.getInstance(context).insertData(new DownloadData(url, path, name, 0, totalSize, System.currentTimeMillis()));
+                        Db.getInstance(context).insertData(new DownloadData(url, path, 3,name, 0, totalSize, System.currentTimeMillis()));
                     }
                     if (downloadData == null) {
                         downloadCallback.onStart(currentSize, totalSize, Utils.getPercentage(currentSize, totalSize));
@@ -222,7 +222,7 @@ public class DownloadManger {
         this.url = data.getUrl();
         this.path = data.getPath();
         this.name = data.getName();
-        this.childTaskCount = data.getThread();
+        this.childTaskCount = data.getChildTaskCount();
 
         mFileHandler = new FileHandler(url, path, name, childTaskCount, mHandler);
 

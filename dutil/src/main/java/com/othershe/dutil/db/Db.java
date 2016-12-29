@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.othershe.dutil.data.DownloadData;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Db {
@@ -51,6 +50,7 @@ public class Db {
         values.put("url", data.getUrl());
         values.put("path", data.getPath());
         values.put("name", data.getName());
+        values.put("child_task_count", data.getChildTaskCount());
         values.put("current_size", data.getCurrentSize());
         values.put("total_size", data.getTotalSize());
         values.put("date", data.getDate());
@@ -80,6 +80,7 @@ public class Db {
         data.setUrl(cursor.getString(cursor.getColumnIndex("url")));
         data.setPath(cursor.getString(cursor.getColumnIndex("path")));
         data.setName(cursor.getString(cursor.getColumnIndex("name")));
+        data.setChildTaskCount(cursor.getInt(cursor.getColumnIndex("child_task_count")));
         data.setCurrentSize(cursor.getInt(cursor.getColumnIndex("current_size")));
         data.setTotalSize(cursor.getInt(cursor.getColumnIndex("total_size")));
         data.setDate(cursor.getInt(cursor.getColumnIndex("date")));

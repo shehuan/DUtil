@@ -13,6 +13,7 @@ import com.othershe.dutil.DUtil;
 import com.othershe.dutil.Utils.Utils;
 import com.othershe.dutil.callback.DownloadCallback;
 import com.othershe.dutil.download.DownloadManger;
+import com.othershe.dutil.download.DownloadManger1;
 
 import java.io.File;
 
@@ -32,7 +33,7 @@ public class SingleTaskActivity extends AppCompatActivity {
     private TextView mRestart;
     private ProgressBar progressBar;
 
-    DownloadManger manger;
+    DownloadManger1 manger;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,10 +48,10 @@ public class SingleTaskActivity extends AppCompatActivity {
         mRestart = (TextView) findViewById(R.id.restart);
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
 
-        final String name = "开心消消乐";
+        final String name = "阴阳师";
 
         manger = DUtil.initDownload(this)
-                .url("http://1.198.5.22/imtt.dd.qq.com/16891/8EEC7D8996760973B5CEA15ECA1700E3.apk")
+                .url("http://1.198.5.23/imtt.dd.qq.com/16891/B8723A0DB2F2702C04D801D9FD19822C.apk")
                 .path(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath())
                 .name(name + ".apk")
                 .thread(3)
