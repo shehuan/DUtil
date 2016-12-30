@@ -131,7 +131,7 @@ public class DownloadManger {
     }
 
     /**
-     * 退出
+     * 单个退出
      *
      * @param url
      */
@@ -140,5 +140,15 @@ public class DownloadManger {
             progressHandlerMap.get(url).destroy();
             progressHandlerMap.remove(url);
         }
+    }
+
+    /**
+     * 全部退出
+     */
+    public void destroy() {
+        for (ProgressHandler progressHandler : progressHandlerMap.values()) {
+            progressHandler.destroy();
+        }
+        progressHandlerMap.clear();
     }
 }

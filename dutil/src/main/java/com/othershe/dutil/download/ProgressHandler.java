@@ -170,7 +170,7 @@ public class ProgressHandler {
         if (mCurrentState == CANCEL || mCurrentState == PAUSE) {
             return;
         }
-        fileTask.onDestroy();
+        fileTask.destroy();
     }
 
     /**
@@ -179,7 +179,7 @@ public class ProgressHandler {
      */
     public void pause() {
         if (mCurrentState == PROGRESS) {
-            fileTask.onPause();
+            fileTask.pause();
         }
     }
 
@@ -188,7 +188,7 @@ public class ProgressHandler {
      */
     public void cancel() {
         if (mCurrentState == PROGRESS) {
-            fileTask.onCancel();
+            fileTask.cancel();
         } else if (mCurrentState == PAUSE || mCurrentState == ERROR) {
             mHandler.sendEmptyMessage(CANCEL);
         }

@@ -186,7 +186,7 @@ public class DownloadManger1 {
         if (mCurrentState == CANCEL || mCurrentState == PAUSE) {
             return;
         }
-        mFileTask.onDestroy();
+        mFileTask.destroy();
     }
 
     /**
@@ -195,7 +195,7 @@ public class DownloadManger1 {
      */
     public void pause() {
         if (mCurrentState == PROGRESS) {
-            mFileTask.onPause();
+            mFileTask.pause();
         }
     }
 
@@ -214,7 +214,7 @@ public class DownloadManger1 {
      */
     public void cancel() {
         if (mCurrentState == PROGRESS) {
-            mFileTask.onCancel();
+            mFileTask.cancel();
         } else if (mCurrentState == PAUSE || mCurrentState == ERROR) {
             mHandler.sendEmptyMessage(CANCEL);
         }
@@ -226,7 +226,7 @@ public class DownloadManger1 {
     public void restart() {
         if (mCurrentState == PROGRESS) {
             isRestart = true;
-            mFileTask.onCancel();
+            mFileTask.cancel();
         } else if (mCurrentState == PAUSE || mCurrentState == ERROR) {
             isRestart = true;
             mHandler.sendEmptyMessage(CANCEL);

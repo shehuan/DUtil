@@ -342,15 +342,15 @@ public class FileTask implements Runnable {
         handler.sendMessage(message);
     }
 
-    public void onPause() {
+    public void pause() {
         IS_PAUSE = true;
     }
 
-    public void onCancel() {
+    public void cancel() {
         IS_CANCEL = true;
     }
 
-    public void onDestroy() {
+    public void destroy() {
         IS_DESTROY = true;
     }
 }

@@ -57,7 +57,7 @@ public class SingleTaskActivity extends AppCompatActivity {
         final String name = "消消乐";
         url = "http://1.198.5.22/imtt.dd.qq.com/16891/8EEC7D8996760973B5CEA15ECA1700E3.apk";
 
-        downloadManger = DUtil.initDownload(mContext)
+        downloadManger = DUtil.init(mContext)
                 .url(url)
                 .path(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath())
                 .name(name + ".apk")
