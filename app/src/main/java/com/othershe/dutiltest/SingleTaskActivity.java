@@ -1,5 +1,6 @@
 package com.othershe.dutiltest;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
@@ -13,7 +14,6 @@ import com.othershe.dutil.DUtil;
 import com.othershe.dutil.Utils.Utils;
 import com.othershe.dutil.callback.DownloadCallback;
 import com.othershe.dutil.download.DownloadManger;
-import com.othershe.dutil.download.DownloadManger1;
 
 import java.io.File;
 
@@ -22,7 +22,7 @@ public class SingleTaskActivity extends AppCompatActivity {
     /**
      * http://1.198.5.23/imtt.dd.qq.com/16891/B8723A0DB2F2702C04D801D9FD19822C.apk //阴阳师
      * http://1.82.215.170/imtt.dd.qq.com/16891/85B6221DE84C466310575D9FBCA453A8.apk  //天天酷跑
-     * http://1.198.5.22/imtt.dd.qq.com/16891/8EEC7D8996760973B5CEA15ECA1700E3.apk  //xxl
+     * http://1.198.5.22/imtt.dd.qq.com/16891/8EEC7D8996760973B5CEA15ECA1700E3.apk  //消消乐
      */
 
     private TextView mTip;
@@ -33,12 +33,18 @@ public class SingleTaskActivity extends AppCompatActivity {
     private TextView mRestart;
     private ProgressBar progressBar;
 
-    DownloadManger1 manger;
+    private Context mContext;
+
+    private String url;
+
+    private DownloadManger downloadManger;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_single_task);
+
+        mContext = this;
 
         mTip = (TextView) findViewById(R.id.tip);
         mProgress = (TextView) findViewById(R.id.progress);
@@ -48,10 +54,11 @@ public class SingleTaskActivity extends AppCompatActivity {
         mRestart = (TextView) findViewById(R.id.restart);
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
 
-        final String name = "阴阳师";
+        final String name = "消消乐";
+        url = "http://1.198.5.22/imtt.dd.qq.com/16891/8EEC7D8996760973B5CEA15ECA1700E3.apk";
 
-        manger = DUtil.initDownload(this)
-                .url("http://1.198.5.23/imtt.dd.qq.com/16891/B8723A0DB2F2702C04D801D9FD19822C.apk")
+        downloadManger = DUtil.initDownload(mContext)
+                .url(url)
                 .path(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath())
                 .name(name + ".apk")
                 .thread(3)
@@ -102,35 +109,35 @@ public class SingleTaskActivity extends AppCompatActivity {
         mPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                manger.pause();
+                downloadManger.pause(url);
             }
         });
 
         mResume.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                manger.resume();
+                downloadManger.resume(url);
             }
         });
 
         mCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                manger.cancel();
+                downloadManger.cancel(url);
             }
         });
 
         mRestart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                manger.restart();
+                downloadManger.restart(url);
             }
         });
     }
 
     @Override
     protected void onDestroy() {
-        manger.destroy();
+        downloadManger.destroy(url);
         super.onDestroy();
     }
 }

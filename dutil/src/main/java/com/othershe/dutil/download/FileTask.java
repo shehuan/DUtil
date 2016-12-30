@@ -55,13 +55,15 @@ public class FileTask implements Runnable {
 
     private int tempChildTaskCount;
 
-    public FileTask(Context context, String url, String path, String name, int childTaskCount, Handler handler) {
+    public FileTask(Context context, DownloadData downloadData, Handler handler) {
         this.context = context;
-        this.url = url;
-        this.path = path;
-        this.name = name;
-        this.childTaskCount = childTaskCount;
+        this.url = downloadData.getUrl();
+        this.path = downloadData.getPath();
+        this.name = downloadData.getName();
+        this.childTaskCount = downloadData.getChildTaskCount();
         this.handler = handler;
+
+        TEMP_FILE_TOTAL_SIZE = EACH_TEMP_SIZE * childTaskCount;
     }
 
     @Override
@@ -99,7 +101,6 @@ public class FileTask implements Runnable {
                 return;
             }
 
-            TEMP_FILE_TOTAL_SIZE = EACH_TEMP_SIZE * childTaskCount;
             long fileLength = response.body().contentLength();
             onStart(fileLength, 0, true);
 

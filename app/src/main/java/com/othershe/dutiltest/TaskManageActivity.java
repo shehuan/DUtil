@@ -1,21 +1,17 @@
 package com.othershe.dutiltest;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.othershe.baseadapter.ViewHolder;
 import com.othershe.baseadapter.interfaces.OnItemChildClickListener;
-import com.othershe.dutil.callback.ProgressCallback;
 import com.othershe.dutil.data.DownloadData;
-import com.othershe.dutil.download.DownloadMangerPool;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,9 +48,7 @@ public class TaskManageActivity extends AppCompatActivity {
         downloadListAdapter.setOnItemChildClickListener(R.id.start, new OnItemChildClickListener<DownloadData>() {
             @Override
             public void onItemChildClick(ViewHolder viewHolder, DownloadData data, int position) {
-                DownloadMangerPool.getInstance(mContext).start(datas.get(0));
-                DownloadMangerPool.getInstance(mContext).start(datas.get(1));
-                DownloadMangerPool.getInstance(mContext).start(datas.get(2));
+
             }
         });
 
@@ -62,7 +56,7 @@ public class TaskManageActivity extends AppCompatActivity {
         downloadListAdapter.setOnItemChildClickListener(R.id.pause, new OnItemChildClickListener<DownloadData>() {
             @Override
             public void onItemChildClick(ViewHolder viewHolder, DownloadData data, int position) {
-                DownloadMangerPool.getInstance(mContext).pause(data.getUrl());
+
             }
         });
 
@@ -70,7 +64,7 @@ public class TaskManageActivity extends AppCompatActivity {
         downloadListAdapter.setOnItemChildClickListener(R.id.resume, new OnItemChildClickListener<DownloadData>() {
             @Override
             public void onItemChildClick(ViewHolder viewHolder, DownloadData data, int position) {
-                DownloadMangerPool.getInstance(mContext).resume(data.getUrl());
+
             }
         });
 
@@ -78,7 +72,7 @@ public class TaskManageActivity extends AppCompatActivity {
         downloadListAdapter.setOnItemChildClickListener(R.id.cancel, new OnItemChildClickListener<DownloadData>() {
             @Override
             public void onItemChildClick(ViewHolder viewHolder, DownloadData data, int position) {
-                DownloadMangerPool.getInstance(mContext).cancel(data.getUrl());
+
             }
         });
 
@@ -86,7 +80,7 @@ public class TaskManageActivity extends AppCompatActivity {
         downloadListAdapter.setOnItemChildClickListener(R.id.restart, new OnItemChildClickListener<DownloadData>() {
             @Override
             public void onItemChildClick(ViewHolder viewHolder, DownloadData data, int position) {
-                DownloadMangerPool.getInstance(mContext).restart(data.getUrl());
+
             }
         });
 
@@ -94,29 +88,6 @@ public class TaskManageActivity extends AppCompatActivity {
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         downloadList.setLayoutManager(layoutManager);
         downloadList.setAdapter(downloadListAdapter);
-
-        DownloadMangerPool.getInstance(mContext).setOnProgressCallback(new ProgressCallback() {
-
-            @Override
-            public void onProgress(List<DownloadData> progressDatas) {
-                for (DownloadData data : datas) {
-                    for (int i = 0; i < progressDatas.size(); i++) {
-                        if (data.getUrl().equals(progressDatas.get(i).getUrl())) {
-                            data.setCurrentSize(progressDatas.get(i).getCurrentSize());
-                            data.setPercentage(progressDatas.get(i).getPercentage());
-                            data.setTotalSize(progressDatas.get(i).getTotalSize());
-                            break;
-                        }
-                    }
-                }
-
-                downloadListAdapter.notifyDataSetChanged();
-
-//                for (DownloadData data : progressDatas) {
-//                    Log.e(data.getName(), data.getPercentage() + "");
-//                }
-            }
-        });
     }
 
     @Override
