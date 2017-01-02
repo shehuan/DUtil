@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.othershe.dutil.data.DownloadData;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Db {
@@ -64,7 +65,7 @@ public class Db {
     }
 
     /**
-     * 获得下载信息
+     * 获得url对应的下载数据
      */
     public DownloadData getData(String url) {
 
@@ -88,6 +89,32 @@ public class Db {
         cursor.close();
 
         return data;
+    }
+
+    /**
+     * 获得全部下载数据
+     *
+     * @return
+     */
+    public List<DownloadData> getAllData() {
+        List<DownloadData> list = new ArrayList<>();
+        Cursor cursor = sqldb.query(TABLE_NAME_DOWNLOAD, null, null, null, null, null, null);
+        if (cursor.moveToFirst()) {
+            do {
+                DownloadData data = new DownloadData();
+                data.setUrl(cursor.getString(cursor.getColumnIndex("url")));
+                data.setPath(cursor.getString(cursor.getColumnIndex("path")));
+                data.setName(cursor.getString(cursor.getColumnIndex("name")));
+                data.setChildTaskCount(cursor.getInt(cursor.getColumnIndex("child_task_count")));
+                data.setCurrentSize(cursor.getInt(cursor.getColumnIndex("current_size")));
+                data.setTotalSize(cursor.getInt(cursor.getColumnIndex("total_size")));
+                data.setDate(cursor.getInt(cursor.getColumnIndex("date")));
+
+                list.add(data);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return list;
     }
 
     /**

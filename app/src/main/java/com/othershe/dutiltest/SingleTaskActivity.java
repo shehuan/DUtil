@@ -63,7 +63,7 @@ public class SingleTaskActivity extends AppCompatActivity {
                 .name(name + ".apk")
                 .thread(3)
                 .build()
-                .execute(new DownloadCallback() {
+                .start(new DownloadCallback() {
 
                     @Override
                     public void onStart(long currentSize, long totalSize, float progress) {

@@ -40,16 +40,6 @@ public class OkHttpManager {
         return call;
     }
 
-    public void initRequest(String url, final Callback callback) {
-        Request request = new Request.Builder()
-                .url(url)
-                .header("Range", "bytes=0-")
-                .build();
-
-        Call call = okHttpClient.newCall(request);
-        call.enqueue(callback);
-    }
-
     /**
      * 同步请求
      *

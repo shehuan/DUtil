@@ -16,10 +16,11 @@ public class DownloadData {
 
     }
 
-    public DownloadData(String url, String path, String name) {
+    public DownloadData(String url, String path, String name, int childTaskCount) {
         this.url = url;
         this.path = path;
         this.name = name;
+        this.childTaskCount = childTaskCount;
     }
 
     public DownloadData(String url, String path, int childTaskCount, String name, int currentSize, int totalSize, long date) {

@@ -4,9 +4,11 @@ import android.content.Context;
 
 import com.othershe.dutil.callback.DownloadCallback;
 import com.othershe.dutil.data.DownloadData;
+import com.othershe.dutil.db.Db;
 import com.othershe.dutil.service.ThreadPool;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.othershe.dutil.data.Consts.NONE;
@@ -47,35 +49,58 @@ public class DownloadManger {
         downloadData.setPath(path);
         downloadData.setName(name);
         downloadData.setChildTaskCount(childTaskCount == 0 ? 3 : childTaskCount);//默认每个任务分割成3个异步任务
-
-        downloadDataMap.put(url, downloadData);
     }
 
-    public DownloadManger execute(DownloadCallback callback) {
-        callbackMap.put(downloadData.getUrl(), callback);
-        start(downloadData, callback);
-
+    public DownloadManger start(DownloadCallback downloadCallback) {
+        execute(downloadData, downloadCallback);
         return downloadManager;
     }
 
-    public DownloadManger execute() {
-        start(downloadData, null);
-        return downloadManager;
+    public void start(String url) {
+        execute(downloadDataMap.get(url), callbackMap.get(url));
     }
 
-    public void execute(DownloadData data) {
-        start(data, null);
+    public void setOnDownloadCallback(DownloadData downloadData, DownloadCallback downloadCallback) {
+        downloadDataMap.put(downloadData.getUrl(), downloadData);
+        callbackMap.put(downloadData.getUrl(), downloadCallback);
     }
 
     /**
-     * 开始从头下载
+     * 获得数据库中对应url下载数据
+     *
+     * @param url
+     * @return
      */
-    private void start(DownloadData downloadData, DownloadCallback downloadCallback) {
+    public DownloadData getDbData(String url) {
+        return Db.getInstance(context).getData(url);
+    }
+
+    /**
+     * 获得数据库中所有下载数据
+     *
+     * @return
+     */
+    public List<DownloadData> getAllDbData() {
+        return Db.getInstance(context).getAllData();
+    }
+
+    /**
+     * 执行下载任务
+     */
+    private void execute(DownloadData downloadData, DownloadCallback downloadCallback) {
+        //防止同一个任务多次下载
+        if (progressHandlerMap.get(downloadData.getUrl()) != null) {
+            return;
+        }
         ProgressHandler progressHandler = new ProgressHandler(context, downloadData, downloadCallback);
         FileTask fileTask = new FileTask(context, downloadData, progressHandler.getHandler());
         progressHandler.setFileTask(fileTask);
+
+        downloadDataMap.put(downloadData.getUrl(), downloadData);
+        callbackMap.put(downloadData.getUrl(), downloadCallback);
         fileTaskMap.put(downloadData.getUrl(), fileTask);
         progressHandlerMap.put(downloadData.getUrl(), progressHandler);
+
         ThreadPool.THREAD_POOL_EXECUTOR.execute(fileTask);
     }
 
@@ -98,7 +123,7 @@ public class DownloadManger {
     public void resume(String url) {
         if (progressHandlerMap.get(url).getCurrentState() == PAUSE) {
             progressHandlerMap.remove(url);
-            start(downloadDataMap.get(url), callbackMap.get(url));
+            execute(downloadDataMap.get(url), callbackMap.get(url));
         }
     }
 
@@ -109,7 +134,7 @@ public class DownloadManger {
      */
     public void restart(String url) {
         cancel(url);
-        start(downloadDataMap.get(url), callbackMap.get(url));
+        execute(downloadDataMap.get(url), callbackMap.get(url));
     }
 
     /**
@@ -127,11 +152,12 @@ public class DownloadManger {
                 progressHandlerMap.get(url).cancel();
             }
             progressHandlerMap.remove(url);
+            fileTaskMap.remove(url);
         }
     }
 
     /**
-     * 单个退出
+     * 退出时释放资源
      *
      * @param url
      */
@@ -139,16 +165,17 @@ public class DownloadManger {
         if (progressHandlerMap.containsKey(url)) {
             progressHandlerMap.get(url).destroy();
             progressHandlerMap.remove(url);
+            callbackMap.remove(url);
+            downloadDataMap.remove(url);
+            fileTaskMap.remove(url);
         }
     }
 
-    /**
-     * 全部退出
-     */
-    public void destroy() {
-        for (ProgressHandler progressHandler : progressHandlerMap.values()) {
-            progressHandler.destroy();
+    public void destroy(String... urls){
+        if (urls != null){
+            for (String url : urls){
+                destroy(url);
+            }
         }
-        progressHandlerMap.clear();
     }
 }

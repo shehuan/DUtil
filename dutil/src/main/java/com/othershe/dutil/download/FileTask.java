@@ -272,7 +272,6 @@ public class FileTask implements Runnable {
                 }
 
                 if (IS_DESTROY) {
-                    handler.sendEmptyMessage(DESTROY);
                     break;
                 }
 
