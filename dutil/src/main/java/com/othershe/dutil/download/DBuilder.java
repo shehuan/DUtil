@@ -33,7 +33,7 @@ public class DBuilder {
         return this;
     }
 
-    public DBuilder thread(int thread) {
+    public DBuilder childTaskCount(int thread) {
         this.thread = thread;
         return this;
     }

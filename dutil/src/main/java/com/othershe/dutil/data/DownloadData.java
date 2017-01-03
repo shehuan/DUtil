@@ -1,6 +1,9 @@
 package com.othershe.dutil.data;
 
-public class DownloadData {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class DownloadData implements Parcelable {
 
     private String url;
     private String path;
@@ -14,6 +17,12 @@ public class DownloadData {
 
     public DownloadData() {
 
+    }
+
+    public DownloadData(String url, String path, String name) {
+        this.url = url;
+        this.path = path;
+        this.name = name;
     }
 
     public DownloadData(String url, String path, String name, int childTaskCount) {
@@ -104,4 +113,46 @@ public class DownloadData {
     public void setDate(int date) {
         this.date = date;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.url);
+        dest.writeString(this.path);
+        dest.writeString(this.name);
+        dest.writeInt(this.currentSize);
+        dest.writeInt(this.totalSize);
+        dest.writeFloat(this.percentage);
+        dest.writeInt(this.state);
+        dest.writeInt(this.childTaskCount);
+        dest.writeLong(this.date);
+    }
+
+    protected DownloadData(Parcel in) {
+        this.url = in.readString();
+        this.path = in.readString();
+        this.name = in.readString();
+        this.currentSize = in.readInt();
+        this.totalSize = in.readInt();
+        this.percentage = in.readFloat();
+        this.state = in.readInt();
+        this.childTaskCount = in.readInt();
+        this.date = in.readLong();
+    }
+
+    public static final Parcelable.Creator<DownloadData> CREATOR = new Parcelable.Creator<DownloadData>() {
+        @Override
+        public DownloadData createFromParcel(Parcel source) {
+            return new DownloadData(source);
+        }
+
+        @Override
+        public DownloadData[] newArray(int size) {
+            return new DownloadData[size];
+        }
+    };
 }

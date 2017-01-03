@@ -14,21 +14,25 @@
             android:id="@+id/name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="开心消消乐" />
+            android:text="file name"
+            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/download_size"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="0.00KB/0.00KB" />
+            android:layout_marginRight="10dp"
+            android:layout_toLeftOf="@+id/percentage"
+            android:text="0.00KB/0.00KB"
+            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/percentage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
-            android:text="0.00%" />
+            android:text="0.00%"
+            android:textSize="12sp" />
 
     </RelativeLayout>
 

@@ -5,7 +5,6 @@ import android.content.Context;
 import com.othershe.dutil.callback.DownloadCallback;
 import com.othershe.dutil.data.DownloadData;
 import com.othershe.dutil.db.Db;
-import com.othershe.dutil.service.ThreadPool;
 
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +12,6 @@ import java.util.Map;
 
 import static com.othershe.dutil.data.Consts.NONE;
 import static com.othershe.dutil.data.Consts.PAUSE;
-import static com.othershe.dutil.data.Consts.PROGRESS;
 
 public class DownloadManger {
 
@@ -43,12 +41,25 @@ public class DownloadManger {
         this.context = context;
     }
 
+    /**
+     * 配置线程池
+     *
+     * @param corePoolSize
+     * @param maxPoolSize
+     */
+    public void setTaskPoolSize(int corePoolSize, int maxPoolSize) {
+        if (maxPoolSize > corePoolSize && maxPoolSize * corePoolSize != 0) {
+            ThreadPool.getInstance().setCorePoolSize(corePoolSize);
+            ThreadPool.getInstance().setMaxPoolSize(maxPoolSize);
+        }
+    }
+
     public void init(String url, String path, String name, int childTaskCount) {
         downloadData = new DownloadData();
         downloadData.setUrl(url);
         downloadData.setPath(path);
         downloadData.setName(name);
-        downloadData.setChildTaskCount(childTaskCount == 0 ? 3 : childTaskCount);//默认每个任务分割成3个异步任务
+        downloadData.setChildTaskCount(childTaskCount);
     }
 
     public DownloadManger start(DownloadCallback downloadCallback) {
@@ -92,6 +103,12 @@ public class DownloadManger {
         if (progressHandlerMap.get(downloadData.getUrl()) != null) {
             return;
         }
+
+        //默认每个任务不通过多个异步任务下载
+        if (downloadData.getChildTaskCount() == 0) {
+            downloadData.setChildTaskCount(1);
+        }
+
         ProgressHandler progressHandler = new ProgressHandler(context, downloadData, downloadCallback);
         FileTask fileTask = new FileTask(context, downloadData, progressHandler.getHandler());
         progressHandler.setFileTask(fileTask);
@@ -101,7 +118,12 @@ public class DownloadManger {
         fileTaskMap.put(downloadData.getUrl(), fileTask);
         progressHandlerMap.put(downloadData.getUrl(), progressHandler);
 
-        ThreadPool.THREAD_POOL_EXECUTOR.execute(fileTask);
+        ThreadPool.getInstance().getThreadPoolExecutor().execute(fileTask);
+
+        //如果正在下载的任务数量等于线程池的核心线程数，则新添加的任务处于等待状态
+        if (ThreadPool.getInstance().getThreadPoolExecutor().getActiveCount() == ThreadPool.getInstance().getCorePoolSize()) {
+            downloadCallback.onWait();
+        }
     }
 
     /**
@@ -110,9 +132,7 @@ public class DownloadManger {
      * @param url
      */
     public void pause(String url) {
-        if (progressHandlerMap.get(url).getCurrentState() == PROGRESS) {
-            progressHandlerMap.get(url).pause();
-        }
+        progressHandlerMap.get(url).pause();
     }
 
     /**
@@ -146,7 +166,8 @@ public class DownloadManger {
         if (progressHandlerMap.containsKey(url)) {
             if (progressHandlerMap.get(url).getCurrentState() == NONE) {
                 //取消缓存队列中等待下载的任务
-                ThreadPool.THREAD_POOL_EXECUTOR.remove(fileTaskMap.get(url));
+                ThreadPool.getInstance().getThreadPoolExecutor().remove(fileTaskMap.get(url));
+                callbackMap.get(url).onCancel();
             } else {
                 //取消已经开始下载的任务
                 progressHandlerMap.get(url).cancel();
@@ -171,9 +192,9 @@ public class DownloadManger {
         }
     }
 
-    public void destroy(String... urls){
-        if (urls != null){
-            for (String url : urls){
+    public void destroy(String... urls) {
+        if (urls != null) {
+            for (String url : urls) {
                 destroy(url);
             }
         }

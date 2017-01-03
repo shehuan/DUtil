@@ -4,7 +4,7 @@ import java.io.File;
 
 public interface DownloadCallback extends FileCallback {
     /**
-     * 下载开始
+     * 开始
      */
     void onStart(long currentSize, long totalSize, float progress);
 
@@ -18,21 +18,29 @@ public interface DownloadCallback extends FileCallback {
     void onProgress(long currentSize, long totalSize, float progress);
 
     /**
-     * 下载暂停
+     * 暂停
      */
     void onPause();
 
+    /**
+     * 取消
+     */
     void onCancel();
 
     /**
-     * 下载完成
+     * 完成
      *
      * @param file
      */
     void onFinish(File file);
 
     /**
-     * 下载出错
+     * 等待下载
+     */
+    void onWait();
+
+    /**
+     * 出错
      *
      * @param error
      */

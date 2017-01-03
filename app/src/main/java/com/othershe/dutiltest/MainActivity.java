@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(new Intent(this, TaskManageActivity.class));
                 break;
             case R.id.service_task:
+                startActivity(new Intent(this, ServiceTaskActivity.class));
                 break;
         }
     }

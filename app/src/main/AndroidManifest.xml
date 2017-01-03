@@ -20,6 +20,9 @@
         </activity>
         <activity android:name=".SingleTaskActivity" />
         <activity android:name=".TaskManageActivity" />
+        <activity android:name=".ServiceTaskActivity" />
+
+        <service android:name=".DownloadService" />
     </application>
 
 </manifest>

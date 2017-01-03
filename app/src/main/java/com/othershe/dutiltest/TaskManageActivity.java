@@ -42,13 +42,15 @@ public class TaskManageActivity extends AppCompatActivity {
 
         mContext = this;
 
+//        DownloadManger.getInstance(mContext).setTaskPoolSize(2, 10);
+
         downloadList = (RecyclerView) findViewById(R.id.download_list);
         final List<DownloadData> datas = new ArrayList<>();
-        datas.add(new DownloadData(url1, path, "欢乐斗地主.apk", 3));
-        datas.add(new DownloadData(url2, path, "球球大作战.apk", 3));
-        datas.add(new DownloadData(url3, path, "节奏大师.apk", 3));
-        datas.add(new DownloadData(url4, path, "部落冲突.apk", 3));
-        datas.add(new DownloadData(url5, path, "捕鱼达人.apk", 3));
+        datas.add(new DownloadData(url1, path, "欢乐斗地主.apk"));
+        datas.add(new DownloadData(url2, path, "球球大作战.apk"));
+        datas.add(new DownloadData(url3, path, "节奏大师.apk"));
+        datas.add(new DownloadData(url4, path, "部落冲突.apk"));
+        datas.add(new DownloadData(url5, path, "捕鱼达人.apk"));
 
         downloadListAdapter = new DownloadListAdapter(this, datas, false);
 

@@ -61,7 +61,7 @@ public class SingleTaskActivity extends AppCompatActivity {
                 .url(url)
                 .path(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath())
                 .name(name + ".apk")
-                .thread(3)
+                .childTaskCount(3)
                 .build()
                 .start(new DownloadCallback() {
 
@@ -98,6 +98,11 @@ public class SingleTaskActivity extends AppCompatActivity {
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         intent.setDataAndType(uri, "application/vnd.android.package-archive");
                         startActivity(intent);
+                    }
+
+                    @Override
+                    public void onWait() {
+
                     }
 
                     @Override

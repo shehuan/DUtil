@@ -56,13 +56,17 @@ public class Utils {
      * @return
      */
     public static boolean isServerFileChanged(Response response) {
-        if (response.code() == 200) {
-            return true;
-        } else if (response.code() == 206) {
-            return false;
-        }
+        return !(response.code() == 206);
+    }
 
-        return false;
+    /**
+     * 文件最后修改时间
+     *
+     * @param response
+     * @return
+     */
+    public static String getLastModify(Response response) {
+        return response.headers().get("Last-Modified");
     }
 
     /**

@@ -28,6 +28,15 @@ public class OkHttpManager {
         private static final OkHttpManager instance = new OkHttpManager();
     }
 
+    /**
+     * 根据断点请求
+     *
+     * @param url
+     * @param start
+     * @param end
+     * @param callback
+     * @return
+     */
     public Call initRequest(String url, long start, long end, final Callback callback) {
         Request request = new Request.Builder()
                 .url(url)
@@ -56,14 +65,21 @@ public class OkHttpManager {
         return okHttpClient.newCall(request).execute();
     }
 
-    public void initRequest(String url, final Callback callback, String ifRange) {
+    /**
+     * 文件存在的情况下可判断服务端文件是否已经更改
+     *
+     * @param url
+     * @param lastModify
+     * @return
+     * @throws IOException
+     */
+    public Response initRequest(String url, String lastModify) throws IOException {
         Request request = new Request.Builder()
                 .url(url)
                 .header("Range", "bytes=0-")
-                .header("If-Range", ifRange)
+                .header("If-Range", lastModify)
                 .build();
 
-        Call call = okHttpClient.newCall(request);
-        call.enqueue(callback);
+        return okHttpClient.newCall(request).execute();
     }
 }
