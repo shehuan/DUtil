@@ -54,12 +54,14 @@ public class SingleTaskActivity extends AppCompatActivity {
         mRestart = (TextView) findViewById(R.id.restart);
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
 
+        //Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath()
+
         final String name = "消消乐";
         url = "http://1.198.5.22/imtt.dd.qq.com/16891/8EEC7D8996760973B5CEA15ECA1700E3.apk";
 
         downloadManger = DUtil.init(mContext)
                 .url(url)
-                .path(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath())
+                .path(Environment.getExternalStorageDirectory() + "/DUtil/")
                 .name(name + ".apk")
                 .childTaskCount(3)
                 .build()

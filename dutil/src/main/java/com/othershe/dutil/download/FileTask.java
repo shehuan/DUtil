@@ -1,6 +1,7 @@
 package com.othershe.dutil.download;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -16,6 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.net.URI;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -70,13 +72,28 @@ public class FileTask implements Runnable {
     public void run() {
         Log.e("thread_name", Thread.currentThread().getName());
         try {
-            Response response = OkHttpManager.getInstance().initRequest(url);
-            if (response != null && response.isSuccessful()) {
-                if (Utils.isSupportRange(response)) {
-                    prepareRangeFile(response);
+            File saveFile = Utils.createFile(path, name);
+            File tempFile = Utils.createFile(path, name + ".temp");
+            DownloadData data = Db.getInstance(context).getData(url);
+            if (Utils.isFileExists(saveFile) && Utils.isFileExists(tempFile) && data != null) {
+                Response response = OkHttpManager.getInstance().initRequest(url, data.getLastModify());
+                if (response != null && response.isSuccessful() && Utils.isNotServerFileChanged(response)) {
+                    TEMP_FILE_TOTAL_SIZE = EACH_TEMP_SIZE * data.getChildTaskCount();
+                    onStart(data.getTotalSize(), data.getCurrentSize(), "", true);
                     saveRangeFile();
                 } else {
-                    saveCommonFile(response);
+                    prepareRangeFile(response);
+                    saveRangeFile();
+                }
+            } else {
+                Response response = OkHttpManager.getInstance().initRequest(url);
+                if (response != null && response.isSuccessful()) {
+                    if (Utils.isSupportRange(response)) {
+                        prepareRangeFile(response);
+                        saveRangeFile();
+                    } else {
+                        saveCommonFile(response);
+                    }
                 }
             }
         } catch (IOException e) {
@@ -91,24 +108,26 @@ public class FileTask implements Runnable {
 
         try {
 
-            File saveFile = new File(path, name);
-            File tempFile = new File(path, name + ".temp");
-            DownloadData data = Db.getInstance(context).getData(url);
-            if (saveFile.exists() && tempFile.exists() && data != null) {
-                //如果存在下载记录，则更改threadCount
-                TEMP_FILE_TOTAL_SIZE = EACH_TEMP_SIZE * data.getChildTaskCount();
-                onStart(data.getTotalSize(), data.getCurrentSize(), true);
-                return;
-            }
+            File saveFile = Utils.createFile(path, name);
+            File tempFile = Utils.createFile(path, name + ".temp");
+//            DownloadData data = Db.getInstance(context).getData(url);
+//            if (Utils.isFileExists(saveFile) && Utils.isFileExists(tempFile) && data != null) {
+//                //如果存在下载记录，则更改threadCount
+//                TEMP_FILE_TOTAL_SIZE = EACH_TEMP_SIZE * data.getChildTaskCount();
+//                onStart(data.getTotalSize(), data.getCurrentSize(), true);
+//                return;
+//            }
 
             long fileLength = response.body().contentLength();
-            onStart(fileLength, 0, true);
+            onStart(fileLength, 0, Utils.getLastModify(response), true);
 
+            Db.getInstance(context).deleteData(url);
             Utils.deleteFile(saveFile, tempFile);
-            saveRandomAccessFile = new RandomAccessFile(saveFile, "rws");
+
+            saveRandomAccessFile = new RandomAccessFile(saveFile, "rwd");
             saveRandomAccessFile.setLength(fileLength);
 
-            tempRandomAccessFile = new RandomAccessFile(tempFile, "rws");
+            tempRandomAccessFile = new RandomAccessFile(tempFile, "rwd");
             tempRandomAccessFile.setLength(TEMP_FILE_TOTAL_SIZE);
             tempChannel = tempRandomAccessFile.getChannel();
             MappedByteBuffer buffer = tempChannel.map(READ_WRITE, 0, TEMP_FILE_TOTAL_SIZE);
@@ -142,8 +161,8 @@ public class FileTask implements Runnable {
      */
     private void saveRangeFile() {
 
-        final File saveFile = new File(path, name);
-        final File tempFile = new File(path, name + ".temp");
+        final File saveFile = Utils.createFile(path, name);
+        final File tempFile = Utils.createFile(path, name + ".temp");
 
         final Ranges range = readDownloadRange(tempFile);
 
@@ -192,11 +211,11 @@ public class FileTask implements Runnable {
         Log.e("range-o" + index, range.start[index] + " = " + range.end[index]);
 
         try {
-            saveRandomAccessFile = new RandomAccessFile(saveFile, "rws");
+            saveRandomAccessFile = new RandomAccessFile(saveFile, "rwd");
             saveChannel = saveRandomAccessFile.getChannel();
             MappedByteBuffer saveBuffer = saveChannel.map(READ_WRITE, range.start[index], range.end[index] - range.start[index] + 1);
 
-            tempRandomAccessFile = new RandomAccessFile(tempFile, "rws");
+            tempRandomAccessFile = new RandomAccessFile(tempFile, "rwd");
             tempChannel = tempRandomAccessFile.getChannel();
             MappedByteBuffer tempBuffer = tempChannel.map(READ_WRITE, 0, TEMP_FILE_TOTAL_SIZE);
 
@@ -251,7 +270,7 @@ public class FileTask implements Runnable {
         try {
 
             long fileLength = response.body().contentLength();
-            onStart(fileLength, 0, false);
+            onStart(fileLength, 0, "", false);
 
             Utils.deleteFile(path, name);
 
@@ -299,7 +318,7 @@ public class FileTask implements Runnable {
         RandomAccessFile record = null;
         FileChannel channel = null;
         try {
-            record = new RandomAccessFile(tempFile, "rws");
+            record = new RandomAccessFile(tempFile, "rwd");
             channel = record.getChannel();
             MappedByteBuffer buffer = channel.map(READ_WRITE, 0, TEMP_FILE_TOTAL_SIZE);
             long[] startByteArray = new long[childTaskCount];
@@ -318,12 +337,18 @@ public class FileTask implements Runnable {
         return null;
     }
 
-    private void onStart(long fileLength, long currentLength, boolean isSupportRange) {
+    private void onStart(long fileLength, long currentLength, String lastModify, boolean isSupportRange) {
         Message message = Message.obtain();
         message.what = START;
-        message.arg1 = (int) fileLength;
-        message.arg2 = (int) currentLength;
-        message.obj = isSupportRange;
+//        message.arg1 = (int) fileLength;
+//        message.arg2 = (int) currentLength;
+//        message.obj = isSupportRange;
+        Bundle bundle = new Bundle();
+        bundle.putInt("fileLength", (int) fileLength);
+        bundle.putInt("currentLength", (int) currentLength);
+        bundle.putString("lastModify", lastModify);
+        bundle.putBoolean("isSupportRange", isSupportRange);
+        message.setData(bundle);
         handler.sendMessage(message);
     }
 

@@ -18,6 +18,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
             + "child_task_count integer, "
             + "current_size integer, "
             + "total_size integer, "
+            + "last_modify text, "
             + "date text)";
 
     public DbOpenHelper(Context context, String name, CursorFactory factory,

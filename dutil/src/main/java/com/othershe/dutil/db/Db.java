@@ -54,6 +54,7 @@ public class Db {
         values.put("child_task_count", data.getChildTaskCount());
         values.put("current_size", data.getCurrentSize());
         values.put("total_size", data.getTotalSize());
+        values.put("last_modify", data.getLastModify());
         values.put("date", data.getDate());
         sqldb.insert(TABLE_NAME_DOWNLOAD, null, values);
     }
@@ -84,6 +85,7 @@ public class Db {
         data.setChildTaskCount(cursor.getInt(cursor.getColumnIndex("child_task_count")));
         data.setCurrentSize(cursor.getInt(cursor.getColumnIndex("current_size")));
         data.setTotalSize(cursor.getInt(cursor.getColumnIndex("total_size")));
+        data.setLastModify(cursor.getString(cursor.getColumnIndex("last_modify")));
         data.setDate(cursor.getInt(cursor.getColumnIndex("date")));
 
         cursor.close();
@@ -108,6 +110,7 @@ public class Db {
                 data.setChildTaskCount(cursor.getInt(cursor.getColumnIndex("child_task_count")));
                 data.setCurrentSize(cursor.getInt(cursor.getColumnIndex("current_size")));
                 data.setTotalSize(cursor.getInt(cursor.getColumnIndex("total_size")));
+                data.setLastModify(cursor.getString(cursor.getColumnIndex("last_modify")));
                 data.setDate(cursor.getInt(cursor.getColumnIndex("date")));
 
                 list.add(data);

@@ -55,8 +55,8 @@ public class Utils {
      * @param response
      * @return
      */
-    public static boolean isServerFileChanged(Response response) {
-        return !(response.code() == 206);
+    public static boolean isNotServerFileChanged(Response response) {
+        return response.code() == 206;
     }
 
     /**
@@ -110,7 +110,7 @@ public class Utils {
      * @param name
      * @return
      */
-    public static File createFile(String path, String name) {
+    public static synchronized File createFile(String path, String name) {
         if (TextUtils.isEmpty(path) || TextUtils.isEmpty(name)) {
             return null;
         }
@@ -130,6 +130,13 @@ public class Utils {
         }
 
         return file;
+    }
+
+    public static boolean isFileExists(File file) {
+        if (file != null && file.exists()) {
+            return true;
+        }
+        return false;
     }
 
     /**

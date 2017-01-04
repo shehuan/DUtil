@@ -6,18 +6,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.ProgressBar;
 
 import com.othershe.baseadapter.ViewHolder;
 import com.othershe.baseadapter.interfaces.OnItemChildClickListener;
-import com.othershe.dutil.Utils.Utils;
-import com.othershe.dutil.callback.DownloadCallback;
 import com.othershe.dutil.data.DownloadData;
 import com.othershe.dutil.download.DownloadManger;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +22,7 @@ public class TaskManageActivity extends AppCompatActivity {
     private String url4 = "http://1.82.242.43/imtt.dd.qq.com/16891/72517F996BB172A75F992962849B051A.apk";//部落冲突
     private String url5 = "http://1.82.242.43/imtt.dd.qq.com/16891/1DF32C4166A703FC2AB7CCE33102123E.apk";//捕鱼达人
 
-    private String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
+    private String path = Environment.getExternalStorageDirectory() + "/DUtil/";
 
     private RecyclerView downloadList;
     private DownloadListAdapter downloadListAdapter;

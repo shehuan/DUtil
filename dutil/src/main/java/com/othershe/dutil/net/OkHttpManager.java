@@ -29,7 +29,7 @@ public class OkHttpManager {
     }
 
     /**
-     * 根据断点请求
+     * 异步（根据断点请求）
      *
      * @param url
      * @param start

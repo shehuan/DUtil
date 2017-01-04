@@ -1,6 +1,7 @@
 package com.othershe.dutil.download;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
@@ -58,13 +59,19 @@ public class ProgressHandler {
 
             switch (mCurrentState) {
                 case START:
-                    totalSize = msg.arg1;
-                    currentSize = msg.arg2;
-                    isSupportRange = (boolean) msg.obj;
+                    Bundle bundle = msg.getData();
+                    totalSize = bundle.getInt("fileLength");
+                    currentSize = bundle.getInt("currentLength");
+                    String lastModify = bundle.getString("lastModify");
+                    isSupportRange = bundle.getBoolean("isSupportRange");
+
+//                    totalSize = msg.arg1;
+//                    currentSize = msg.arg2;
+//                    isSupportRange = (boolean) msg.obj;
                     if (!isSupportRange) {
                         childTaskCount = 1;
                     } else if (currentSize == 0) {
-                        Db.getInstance(context).insertData(new DownloadData(url, path, childTaskCount, name, currentSize, totalSize, System.currentTimeMillis()));
+                        Db.getInstance(context).insertData(new DownloadData(url, path, childTaskCount, name, currentSize, totalSize, lastModify, System.currentTimeMillis()));
                     }
                     if (downloadCallback != null) {
                         downloadCallback.onStart(currentSize, totalSize, Utils.getPercentage(currentSize, totalSize));

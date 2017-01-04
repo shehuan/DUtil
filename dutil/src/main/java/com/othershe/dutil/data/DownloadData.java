@@ -14,6 +14,7 @@ public class DownloadData implements Parcelable {
     private int state;
     private int childTaskCount;
     private long date;
+    private String lastModify;
 
     public DownloadData() {
 
@@ -32,13 +33,14 @@ public class DownloadData implements Parcelable {
         this.childTaskCount = childTaskCount;
     }
 
-    public DownloadData(String url, String path, int childTaskCount, String name, int currentSize, int totalSize, long date) {
+    public DownloadData(String url, String path, int childTaskCount, String name, int currentSize, int totalSize, String lastModify, long date) {
         this.url = url;
         this.path = path;
         this.childTaskCount = childTaskCount;
         this.currentSize = currentSize;
         this.name = name;
         this.totalSize = totalSize;
+        this.lastModify = lastModify;
         this.date = date;
     }
 
@@ -114,6 +116,14 @@ public class DownloadData implements Parcelable {
         this.date = date;
     }
 
+    public String getLastModify() {
+        return lastModify;
+    }
+
+    public void setLastModify(String lastModify) {
+        this.lastModify = lastModify;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -130,6 +140,7 @@ public class DownloadData implements Parcelable {
         dest.writeInt(this.state);
         dest.writeInt(this.childTaskCount);
         dest.writeLong(this.date);
+        dest.writeString(this.lastModify);
     }
 
     protected DownloadData(Parcel in) {
@@ -142,6 +153,7 @@ public class DownloadData implements Parcelable {
         this.state = in.readInt();
         this.childTaskCount = in.readInt();
         this.date = in.readLong();
+        this.lastModify = in.readString();
     }
 
     public static final Parcelable.Creator<DownloadData> CREATOR = new Parcelable.Creator<DownloadData>() {
