@@ -6,7 +6,7 @@ public class DBuilder {
     private String url;//下载链接
     private String path;//保存路径
     private String name;//文件名
-    private int thread;//单个任务采用几个线程下载
+    private int childTaskCount;//单个任务采用几个线程下载
 
     private Context context;
 
@@ -34,13 +34,13 @@ public class DBuilder {
     }
 
     public DBuilder childTaskCount(int thread) {
-        this.thread = thread;
+        this.childTaskCount = thread;
         return this;
     }
 
     public DownloadManger build() {
         DownloadManger downloadManger = DownloadManger.getInstance(context);
-        downloadManger.init(url, path, name, thread);
+        downloadManger.init(url, path, name, childTaskCount);
         return downloadManger;
     }
 }

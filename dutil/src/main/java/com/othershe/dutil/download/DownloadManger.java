@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.othershe.dutil.data.Consts.ERROR;
+import static com.othershe.dutil.data.Consts.FINISH;
 import static com.othershe.dutil.data.Consts.NONE;
 import static com.othershe.dutil.data.Consts.PAUSE;
 
@@ -157,6 +158,14 @@ public class DownloadManger {
      * @param url
      */
     public void restart(String url) {
+        //文件已下载完成的情况
+        if (progressHandlerMap.containsKey(url) && progressHandlerMap.get(url).getCurrentState() == FINISH) {
+            progressHandlerMap.remove(url);
+            fileTaskMap.remove(url);
+            innerRestart(url);
+            return;
+        }
+
         //任务已经取消，则直接重新下载
         if (!progressHandlerMap.containsKey(url)) {
             innerRestart(url);
@@ -184,7 +193,7 @@ public class DownloadManger {
     }
 
     public void innerCancel(String url, boolean isNeedRestart) {
-        if (progressHandlerMap.containsKey(url)) {
+        if (progressHandlerMap.get(url) != null){
             if (progressHandlerMap.get(url).getCurrentState() == NONE) {
                 //取消缓存队列中等待下载的任务
                 ThreadPool.getInstance().getThreadPoolExecutor().remove(fileTaskMap.get(url));

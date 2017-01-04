@@ -8,8 +8,8 @@ public class DownloadData implements Parcelable {
     private String url;
     private String path;
     private String name;
-    private int currentSize;
-    private int totalSize;
+    private int currentLength;
+    private int totalLength;
     private float percentage;
     private int state;
     private int childTaskCount;
@@ -33,13 +33,13 @@ public class DownloadData implements Parcelable {
         this.childTaskCount = childTaskCount;
     }
 
-    public DownloadData(String url, String path, int childTaskCount, String name, int currentSize, int totalSize, String lastModify, long date) {
+    public DownloadData(String url, String path, int childTaskCount, String name, int currentLength, int totalLength, String lastModify, long date) {
         this.url = url;
         this.path = path;
         this.childTaskCount = childTaskCount;
-        this.currentSize = currentSize;
+        this.currentLength = currentLength;
         this.name = name;
-        this.totalSize = totalSize;
+        this.totalLength = totalLength;
         this.lastModify = lastModify;
         this.date = date;
     }
@@ -68,20 +68,20 @@ public class DownloadData implements Parcelable {
         this.name = name;
     }
 
-    public int getCurrentSize() {
-        return currentSize;
+    public int getCurrentLength() {
+        return currentLength;
     }
 
-    public void setCurrentSize(int currentSize) {
-        this.currentSize = currentSize;
+    public void setCurrentLength(int currentLength) {
+        this.currentLength = currentLength;
     }
 
-    public int getTotalSize() {
-        return totalSize;
+    public int getTotalLength() {
+        return totalLength;
     }
 
-    public void setTotalSize(int totalSize) {
-        this.totalSize = totalSize;
+    public void setTotalLength(int totalLength) {
+        this.totalLength = totalLength;
     }
 
     public float getPercentage() {
@@ -134,8 +134,8 @@ public class DownloadData implements Parcelable {
         dest.writeString(this.url);
         dest.writeString(this.path);
         dest.writeString(this.name);
-        dest.writeInt(this.currentSize);
-        dest.writeInt(this.totalSize);
+        dest.writeInt(this.currentLength);
+        dest.writeInt(this.totalLength);
         dest.writeFloat(this.percentage);
         dest.writeInt(this.state);
         dest.writeInt(this.childTaskCount);
@@ -147,8 +147,8 @@ public class DownloadData implements Parcelable {
         this.url = in.readString();
         this.path = in.readString();
         this.name = in.readString();
-        this.currentSize = in.readInt();
-        this.totalSize = in.readInt();
+        this.currentLength = in.readInt();
+        this.totalLength = in.readInt();
         this.percentage = in.readFloat();
         this.state = in.readInt();
         this.childTaskCount = in.readInt();

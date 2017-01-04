@@ -52,8 +52,8 @@ public class Db {
         values.put("path", data.getPath());
         values.put("name", data.getName());
         values.put("child_task_count", data.getChildTaskCount());
-        values.put("current_size", data.getCurrentSize());
-        values.put("total_size", data.getTotalSize());
+        values.put("current_length", data.getCurrentLength());
+        values.put("total_length", data.getTotalLength());
         values.put("last_modify", data.getLastModify());
         values.put("date", data.getDate());
         sqldb.insert(TABLE_NAME_DOWNLOAD, null, values);
@@ -83,8 +83,8 @@ public class Db {
         data.setPath(cursor.getString(cursor.getColumnIndex("path")));
         data.setName(cursor.getString(cursor.getColumnIndex("name")));
         data.setChildTaskCount(cursor.getInt(cursor.getColumnIndex("child_task_count")));
-        data.setCurrentSize(cursor.getInt(cursor.getColumnIndex("current_size")));
-        data.setTotalSize(cursor.getInt(cursor.getColumnIndex("total_size")));
+        data.setCurrentLength(cursor.getInt(cursor.getColumnIndex("current_length")));
+        data.setTotalLength(cursor.getInt(cursor.getColumnIndex("total_length")));
         data.setLastModify(cursor.getString(cursor.getColumnIndex("last_modify")));
         data.setDate(cursor.getInt(cursor.getColumnIndex("date")));
 
@@ -108,8 +108,8 @@ public class Db {
                 data.setPath(cursor.getString(cursor.getColumnIndex("path")));
                 data.setName(cursor.getString(cursor.getColumnIndex("name")));
                 data.setChildTaskCount(cursor.getInt(cursor.getColumnIndex("child_task_count")));
-                data.setCurrentSize(cursor.getInt(cursor.getColumnIndex("current_size")));
-                data.setTotalSize(cursor.getInt(cursor.getColumnIndex("total_size")));
+                data.setCurrentLength(cursor.getInt(cursor.getColumnIndex("current_length")));
+                data.setTotalLength(cursor.getInt(cursor.getColumnIndex("total_length")));
                 data.setLastModify(cursor.getString(cursor.getColumnIndex("last_modify")));
                 data.setDate(cursor.getInt(cursor.getColumnIndex("date")));
 
@@ -125,7 +125,7 @@ public class Db {
      */
     public void updateData(int currentSize, String url) {
         ContentValues values = new ContentValues();
-        values.put("current_size", currentSize);
+        values.put("current_length", currentSize);
         sqldb.update(TABLE_NAME_DOWNLOAD, values, "url = ?", new String[]{url});
     }
 

@@ -21,7 +21,7 @@ public class DownloadListAdapter extends CommonBaseAdapter<DownloadData> {
     @Override
     protected void convert(ViewHolder holder, DownloadData data) {
         holder.setText(R.id.name, data.getName());
-        holder.setText(R.id.download_size, Utils.formatSize(data.getCurrentSize()) + "/" + Utils.formatSize(data.getTotalSize()));
+        holder.setText(R.id.download_size, Utils.formatSize(data.getCurrentLength()) + "/" + Utils.formatSize(data.getTotalLength()));
         holder.setText(R.id.percentage, data.getPercentage() + "%");
         ((ProgressBar) holder.getView(R.id.progress_bar)).setProgress((int) data.getPercentage());
 

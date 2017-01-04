@@ -43,9 +43,9 @@ public class ProgressHandler {
     private boolean isNeedRestart;
 
     //记录已经下载的大小
-    private int currentSize = 0;
+    private int currentLength = 0;
     //记录文件总大小
-    private int totalSize = 0;
+    private int totalLength = 0;
     //记录已经暂停或取消的线程数
     private int tempChildTaskCount = 0;
 
@@ -60,30 +60,27 @@ public class ProgressHandler {
             switch (mCurrentState) {
                 case START:
                     Bundle bundle = msg.getData();
-                    totalSize = bundle.getInt("fileLength");
-                    currentSize = bundle.getInt("currentLength");
+                    totalLength = bundle.getInt("totalLength");
+                    currentLength = bundle.getInt("currentLength");
                     String lastModify = bundle.getString("lastModify");
                     isSupportRange = bundle.getBoolean("isSupportRange");
 
-//                    totalSize = msg.arg1;
-//                    currentSize = msg.arg2;
-//                    isSupportRange = (boolean) msg.obj;
                     if (!isSupportRange) {
                         childTaskCount = 1;
-                    } else if (currentSize == 0) {
-                        Db.getInstance(context).insertData(new DownloadData(url, path, childTaskCount, name, currentSize, totalSize, lastModify, System.currentTimeMillis()));
+                    } else if (currentLength == 0) {
+                        Db.getInstance(context).insertData(new DownloadData(url, path, childTaskCount, name, currentLength, totalLength, lastModify, System.currentTimeMillis()));
                     }
                     if (downloadCallback != null) {
-                        downloadCallback.onStart(currentSize, totalSize, Utils.getPercentage(currentSize, totalSize));
+                        downloadCallback.onStart(currentLength, totalLength, Utils.getPercentage(currentLength, totalLength));
                     }
                     break;
                 case PROGRESS:
                     synchronized (this) {
-                        currentSize += msg.arg1;
+                        currentLength += msg.arg1;
                         if (downloadCallback != null) {
-                            downloadCallback.onProgress(currentSize, totalSize, Utils.getPercentage(currentSize, totalSize));
+                            downloadCallback.onProgress(currentLength, totalLength, Utils.getPercentage(currentLength, totalLength));
                         }
-                        if (currentSize == totalSize) {
+                        if (currentLength == totalLength) {
                             sendEmptyMessage(FINISH);
                         }
                     }
@@ -94,9 +91,9 @@ public class ProgressHandler {
                         if (tempChildTaskCount == childTaskCount || mLastSate == PAUSE || mLastSate == ERROR) {
                             tempChildTaskCount = 0;
                             if (downloadCallback != null) {
-                                downloadCallback.onProgress(0, totalSize, 0);
+                                downloadCallback.onProgress(0, totalLength, 0);
                             }
-                            currentSize = 0;
+                            currentLength = 0;
                             if (isSupportRange) {
                                 Db.getInstance(context).deleteData(url);
                                 Utils.deleteFile(new File(path, name + ".temp"));
@@ -116,7 +113,7 @@ public class ProgressHandler {
                 case PAUSE:
                     synchronized (this) {
                         if (isSupportRange) {
-                            Db.getInstance(context).updateData(currentSize, url);
+                            Db.getInstance(context).updateData(currentLength, url);
                         }
                         tempChildTaskCount++;
                         if (tempChildTaskCount == childTaskCount) {
@@ -139,13 +136,13 @@ public class ProgressHandler {
                 case DESTROY:
                     synchronized (this) {
                         if (isSupportRange) {
-                            Db.getInstance(context).updateData(currentSize, url);
+                            Db.getInstance(context).updateData(currentLength, url);
                         }
                     }
                     break;
                 case ERROR:
                     if (isSupportRange) {
-                        Db.getInstance(context).updateData(currentSize, url);
+                        Db.getInstance(context).updateData(currentLength, url);
                     }
                     if (downloadCallback != null) {
                         downloadCallback.onError((String) msg.obj);

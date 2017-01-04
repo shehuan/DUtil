@@ -17,7 +17,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
-import java.net.URI;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -72,19 +71,18 @@ public class FileTask implements Runnable {
     public void run() {
         Log.e("thread_name", Thread.currentThread().getName());
         try {
-            File saveFile = Utils.createFile(path, name);
-            File tempFile = Utils.createFile(path, name + ".temp");
+            File saveFile = new File(path, name);
+            File tempFile = new File(path, name + ".temp");
             DownloadData data = Db.getInstance(context).getData(url);
             if (Utils.isFileExists(saveFile) && Utils.isFileExists(tempFile) && data != null) {
                 Response response = OkHttpManager.getInstance().initRequest(url, data.getLastModify());
                 if (response != null && response.isSuccessful() && Utils.isNotServerFileChanged(response)) {
                     TEMP_FILE_TOTAL_SIZE = EACH_TEMP_SIZE * data.getChildTaskCount();
-                    onStart(data.getTotalSize(), data.getCurrentSize(), "", true);
-                    saveRangeFile();
+                    onStart(data.getTotalLength(), data.getCurrentLength(), "", true);
                 } else {
                     prepareRangeFile(response);
-                    saveRangeFile();
                 }
+                saveRangeFile();
             } else {
                 Response response = OkHttpManager.getInstance().initRequest(url);
                 if (response != null && response.isSuccessful()) {
@@ -110,13 +108,6 @@ public class FileTask implements Runnable {
 
             File saveFile = Utils.createFile(path, name);
             File tempFile = Utils.createFile(path, name + ".temp");
-//            DownloadData data = Db.getInstance(context).getData(url);
-//            if (Utils.isFileExists(saveFile) && Utils.isFileExists(tempFile) && data != null) {
-//                //如果存在下载记录，则更改threadCount
-//                TEMP_FILE_TOTAL_SIZE = EACH_TEMP_SIZE * data.getChildTaskCount();
-//                onStart(data.getTotalSize(), data.getCurrentSize(), true);
-//                return;
-//            }
 
             long fileLength = response.body().contentLength();
             onStart(fileLength, 0, Utils.getLastModify(response), true);
@@ -337,14 +328,11 @@ public class FileTask implements Runnable {
         return null;
     }
 
-    private void onStart(long fileLength, long currentLength, String lastModify, boolean isSupportRange) {
+    private void onStart(long totalLength, long currentLength, String lastModify, boolean isSupportRange) {
         Message message = Message.obtain();
         message.what = START;
-//        message.arg1 = (int) fileLength;
-//        message.arg2 = (int) currentLength;
-//        message.obj = isSupportRange;
         Bundle bundle = new Bundle();
-        bundle.putInt("fileLength", (int) fileLength);
+        bundle.putInt("totalLength", (int) totalLength);
         bundle.putInt("currentLength", (int) currentLength);
         bundle.putString("lastModify", lastModify);
         bundle.putBoolean("isSupportRange", isSupportRange);

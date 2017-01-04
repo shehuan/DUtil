@@ -16,8 +16,8 @@ public class DbOpenHelper extends SQLiteOpenHelper {
             + "path text, "
             + "name text, "
             + "child_task_count integer, "
-            + "current_size integer, "
-            + "total_size integer, "
+            + "current_length integer, "
+            + "total_length integer, "
             + "last_modify text, "
             + "date text)";
 
