@@ -30,48 +30,48 @@ public class DownloadService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        DUtil.init(mContext)
-                .path(intent.getStringExtra("path"))
-                .name(intent.getStringExtra("name"))
-                .url(intent.getStringExtra("url"))
-                .childTaskCount(3)
-                .build()
-                .start(new DownloadCallback() {
-                    @Override
-                    public void onStart(long currentSize, long totalSize, float progress) {
-                        id = NotificationUtil.createProgressNotification(mContext, "消消乐", "快来玩我呀！！！", R.mipmap.ic_launcher, R.mipmap.ic_launcher);
-                    }
-
-                    @Override
-                    public void onProgress(long currentSize, long totalSize, float progress) {
-                        NotificationUtil.updateNotification(id, (int) progress);
-                    }
-
-                    @Override
-                    public void onPause() {
-
-                    }
-
-                    @Override
-                    public void onCancel() {
-
-                    }
-
-                    @Override
-                    public void onFinish(File file) {
-
-                    }
-
-                    @Override
-                    public void onWait() {
-
-                    }
-
-                    @Override
-                    public void onError(String error) {
-
-                    }
-                });
+//        DUtil.init(mContext)
+//                .path(intent.getStringExtra("path"))
+//                .name(intent.getStringExtra("name"))
+//                .url(intent.getStringExtra("url"))
+//                .childTaskCount(3)
+//                .build()
+//                .start(new DownloadCallback() {
+//                    @Override
+//                    public void onStart(long currentSize, long totalSize, float progress) {
+//                        id = NotificationUtil.createProgressNotification(mContext, "消消乐", "快来玩我呀！！！", R.mipmap.ic_launcher, R.mipmap.ic_launcher);
+//                    }
+//
+//                    @Override
+//                    public void onProgress(long currentSize, long totalSize, float progress) {
+//                        NotificationUtil.updateNotification(id, progress);
+//                    }
+//
+//                    @Override
+//                    public void onPause() {
+//
+//                    }
+//
+//                    @Override
+//                    public void onCancel() {
+//
+//                    }
+//
+//                    @Override
+//                    public void onFinish(File file) {
+//
+//                    }
+//
+//                    @Override
+//                    public void onWait() {
+//
+//                    }
+//
+//                    @Override
+//                    public void onError(String error) {
+//
+//                    }
+//                });
         return super.onStartCommand(intent, flags, startId);
     }
 

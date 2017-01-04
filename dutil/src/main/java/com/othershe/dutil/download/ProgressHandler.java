@@ -38,6 +38,9 @@ public class ProgressHandler {
     //是否支持断点续传
     private boolean isSupportRange;
 
+    //重新开始下载需要先进行取消操作
+    private boolean isNeedRestart;
+
     //记录已经下载的大小
     private int currentSize = 0;
     //记录文件总大小
@@ -94,6 +97,11 @@ public class ProgressHandler {
                             Utils.deleteFile(new File(path, name));
                             if (downloadCallback != null) {
                                 downloadCallback.onCancel();
+                            }
+
+                            if (isNeedRestart) {
+                                isNeedRestart = false;
+                                DownloadManger.getInstance(context).innerRestart(url);
                             }
                         }
                     }
@@ -186,7 +194,8 @@ public class ProgressHandler {
     /**
      * 取消（已经被取消、下载结束则不可取消）
      */
-    public void cancel() {
+    public void cancel(boolean isNeedRestart) {
+        this.isNeedRestart = isNeedRestart;
         if (mCurrentState == PROGRESS) {
             fileTask.cancel();
         } else if (mCurrentState == PAUSE || mCurrentState == ERROR) {

@@ -97,9 +97,9 @@ public class NotificationUtil {
      * @param notifyId
      * @param progress
      */
-    public static void updateNotification(int notifyId, int progress) {
+    public static void updateNotification(int notifyId, float progress) {
         NotificationCompat.Builder builder = notificationMap.get(notifyId);
-        builder.setProgress(100, progress, false);
+        builder.setProgress(100, (int) progress, false);
         builder.setContentText(progress + "%");
         notificationManager.notify(notifyId, builder.build());
     }

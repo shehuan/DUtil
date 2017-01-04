@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.othershe.dutil.data.Consts.ERROR;
 import static com.othershe.dutil.data.Consts.NONE;
 import static com.othershe.dutil.data.Consts.PAUSE;
 
@@ -132,7 +133,8 @@ public class DownloadManger {
      * @param url
      */
     public void pause(String url) {
-        progressHandlerMap.get(url).pause();
+        if (progressHandlerMap.containsKey(url))
+            progressHandlerMap.get(url).pause();
     }
 
     /**
@@ -141,7 +143,9 @@ public class DownloadManger {
      * @param url
      */
     public void resume(String url) {
-        if (progressHandlerMap.get(url).getCurrentState() == PAUSE) {
+        if (progressHandlerMap.containsKey(url) &&
+                (progressHandlerMap.get(url).getCurrentState() == PAUSE ||
+                        progressHandlerMap.get(url).getCurrentState() == ERROR)) {
             progressHandlerMap.remove(url);
             execute(downloadDataMap.get(url), callbackMap.get(url));
         }
@@ -153,7 +157,20 @@ public class DownloadManger {
      * @param url
      */
     public void restart(String url) {
-        cancel(url);
+        //任务已经取消，则直接重新下载
+        if (!progressHandlerMap.containsKey(url)) {
+            innerRestart(url);
+        } else {
+            innerCancel(url, true);
+        }
+    }
+
+    /**
+     * 实际的重新下载操作
+     *
+     * @param url
+     */
+    protected void innerRestart(String url) {
         execute(downloadDataMap.get(url), callbackMap.get(url));
     }
 
@@ -163,6 +180,10 @@ public class DownloadManger {
      * @param url
      */
     public void cancel(String url) {
+        innerCancel(url, false);
+    }
+
+    public void innerCancel(String url, boolean isNeedRestart) {
         if (progressHandlerMap.containsKey(url)) {
             if (progressHandlerMap.get(url).getCurrentState() == NONE) {
                 //取消缓存队列中等待下载的任务
@@ -170,7 +191,7 @@ public class DownloadManger {
                 callbackMap.get(url).onCancel();
             } else {
                 //取消已经开始下载的任务
-                progressHandlerMap.get(url).cancel();
+                progressHandlerMap.get(url).cancel(isNeedRestart);
             }
             progressHandlerMap.remove(url);
             fileTaskMap.remove(url);
