@@ -33,14 +33,12 @@ public class NotificationUtil {
      * @param context
      * @param title
      * @param content
-     * @param smallIcon
-     * @param largeIcon
+     * @param icon
      */
-    public static int createProgressNotification(Context context, String title, String content,
-                                                 int smallIcon, int largeIcon) {
+    public static void createProgressNotification(Context context, String title, String content, int icon, int notifyId) {
         initNotificationManager(context);
 
-        NotificationCompat.Builder builder = initBaseBuilder(context, title, content, smallIcon, largeIcon);
+        NotificationCompat.Builder builder = initBaseBuilder(context, title, content, icon);
         builder.setOngoing(true);
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             Intent intent = new Intent();
@@ -48,13 +46,10 @@ public class NotificationUtil {
             builder.setContentIntent(contentIntent);
         }
 
-        int notifyId = (int) System.currentTimeMillis();
 
         notificationManager.notify(notifyId, builder.build());
 
         notificationMap.put(notifyId, builder);
-
-        return notifyId;
     }
 
 
@@ -64,18 +59,16 @@ public class NotificationUtil {
      * @param context
      * @param title
      * @param content
-     * @param smallIcon
-     * @param largeIcon
+     * @param icon
      * @return
      */
-    private static NotificationCompat.Builder initBaseBuilder(Context context, String title, String content,
-                                                              int smallIcon, int largeIcon) {
+    private static NotificationCompat.Builder initBaseBuilder(Context context, String title, String content, int icon) {
 
         return new NotificationCompat.Builder(context)
                 .setContentTitle(title)
                 .setContentText(content)
-                .setSmallIcon(smallIcon)
-                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), largeIcon))
+                .setSmallIcon(icon)
+                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), icon))
                 .setDefaults(Notification.DEFAULT_ALL)
                 .setOnlyAlertOnce(true)
                 .setAutoCancel(true)
@@ -89,6 +82,7 @@ public class NotificationUtil {
      */
     public static void cancelNotification(int notifyId) {
         notificationManager.cancel(notifyId);
+        notificationMap.remove(notifyId);
     }
 
     /**

@@ -54,6 +54,7 @@ public class Db {
         values.put("child_task_count", data.getChildTaskCount());
         values.put("current_length", data.getCurrentLength());
         values.put("total_length", data.getTotalLength());
+        values.put("percentage", data.getPercentage());
         values.put("last_modify", data.getLastModify());
         values.put("date", data.getDate());
         sqldb.insert(TABLE_NAME_DOWNLOAD, null, values);
@@ -85,6 +86,7 @@ public class Db {
         data.setChildTaskCount(cursor.getInt(cursor.getColumnIndex("child_task_count")));
         data.setCurrentLength(cursor.getInt(cursor.getColumnIndex("current_length")));
         data.setTotalLength(cursor.getInt(cursor.getColumnIndex("total_length")));
+        data.setPercentage(cursor.getFloat(cursor.getColumnIndex("percentage")));
         data.setLastModify(cursor.getString(cursor.getColumnIndex("last_modify")));
         data.setDate(cursor.getInt(cursor.getColumnIndex("date")));
 
@@ -110,6 +112,7 @@ public class Db {
                 data.setChildTaskCount(cursor.getInt(cursor.getColumnIndex("child_task_count")));
                 data.setCurrentLength(cursor.getInt(cursor.getColumnIndex("current_length")));
                 data.setTotalLength(cursor.getInt(cursor.getColumnIndex("total_length")));
+                data.setPercentage(cursor.getFloat(cursor.getColumnIndex("percentage")));
                 data.setLastModify(cursor.getString(cursor.getColumnIndex("last_modify")));
                 data.setDate(cursor.getInt(cursor.getColumnIndex("date")));
 
@@ -123,9 +126,10 @@ public class Db {
     /**
      * 更新下载信息
      */
-    public void updateData(int currentSize, String url) {
+    public void updateData(int currentSize, float percentage, String url) {
         ContentValues values = new ContentValues();
         values.put("current_length", currentSize);
+        values.put("percentage", percentage);
         sqldb.update(TABLE_NAME_DOWNLOAD, values, "url = ?", new String[]{url});
     }
 

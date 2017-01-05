@@ -13,11 +13,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ThreadPool {
     //CPU核心数
-    private int CPU_COUNT = 10;//Runtime.getRuntime().availableProcessors();
+    private int CPU_COUNT = Runtime.getRuntime().availableProcessors();
     //可同时下载的任务数（核心线程数）
     private int CORE_POOL_SIZE = 3;
     //缓存队列的大小（最大线程数）
-    private int MAX_POOL_SIZE = 2 * CPU_COUNT + 1;
+    private int MAX_POOL_SIZE = 10;
     //非核心线程闲置的超时时间（秒），如果超时则会被回收
     private long KEEP_ALIVE = 10L;
 

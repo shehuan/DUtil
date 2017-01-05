@@ -49,6 +49,8 @@ public class ProgressHandler {
     //记录已经暂停或取消的线程数
     private int tempChildTaskCount = 0;
 
+    private long lastProgressTime;
+
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -56,6 +58,7 @@ public class ProgressHandler {
 
             int mLastSate = mCurrentState;
             mCurrentState = msg.what;
+            downloadData.setState(mCurrentState);
 
             switch (mCurrentState) {
                 case START:
@@ -77,9 +80,15 @@ public class ProgressHandler {
                 case PROGRESS:
                     synchronized (this) {
                         currentLength += msg.arg1;
-                        if (downloadCallback != null) {
+
+                        downloadData.setCurrentLength(currentLength);
+
+                        //默认500毫秒回调一次
+                        if (downloadCallback != null && (System.currentTimeMillis() - lastProgressTime >= 500 || currentLength == totalLength)) {
                             downloadCallback.onProgress(currentLength, totalLength, Utils.getPercentage(currentLength, totalLength));
+                            lastProgressTime = System.currentTimeMillis();
                         }
+
                         if (currentLength == totalLength) {
                             sendEmptyMessage(FINISH);
                         }
@@ -113,7 +122,7 @@ public class ProgressHandler {
                 case PAUSE:
                     synchronized (this) {
                         if (isSupportRange) {
-                            Db.getInstance(context).updateData(currentLength, url);
+                            Db.getInstance(context).updateData(currentLength, Utils.getPercentage(currentLength, totalLength), url);
                         }
                         tempChildTaskCount++;
                         if (tempChildTaskCount == childTaskCount) {
@@ -136,13 +145,13 @@ public class ProgressHandler {
                 case DESTROY:
                     synchronized (this) {
                         if (isSupportRange) {
-                            Db.getInstance(context).updateData(currentLength, url);
+                            Db.getInstance(context).updateData(currentLength, Utils.getPercentage(currentLength, totalLength), url);
                         }
                     }
                     break;
                 case ERROR:
                     if (isSupportRange) {
-                        Db.getInstance(context).updateData(currentLength, url);
+                        Db.getInstance(context).updateData(currentLength, Utils.getPercentage(currentLength, totalLength), url);
                     }
                     if (downloadCallback != null) {
                         downloadCallback.onError((String) msg.obj);
@@ -154,13 +163,15 @@ public class ProgressHandler {
 
     public ProgressHandler(Context context, DownloadData downloadData, DownloadCallback downloadCallback) {
         this.context = context;
-        this.downloadData = downloadData;
         this.downloadCallback = downloadCallback;
 
         this.url = downloadData.getUrl();
         this.path = downloadData.getPath();
         this.name = downloadData.getName();
         this.childTaskCount = downloadData.getChildTaskCount();
+
+        DownloadData dbData = Db.getInstance(context).getData(url);
+        this.downloadData = dbData == null ? downloadData : dbData;
     }
 
     public Handler getHandler() {
@@ -169,6 +180,10 @@ public class ProgressHandler {
 
     public int getCurrentState() {
         return mCurrentState;
+    }
+
+    public DownloadData getDownloadData() {
+        return downloadData;
     }
 
     public void setFileTask(FileTask fileTask) {

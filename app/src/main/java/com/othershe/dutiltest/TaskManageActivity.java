@@ -10,6 +10,7 @@ import android.support.v7.widget.RecyclerView;
 import com.othershe.baseadapter.ViewHolder;
 import com.othershe.baseadapter.interfaces.OnItemChildClickListener;
 import com.othershe.dutil.data.DownloadData;
+import com.othershe.dutil.db.Db;
 import com.othershe.dutil.download.DownloadManger;
 
 import java.util.ArrayList;
@@ -40,11 +41,35 @@ public class TaskManageActivity extends AppCompatActivity {
 
         downloadList = (RecyclerView) findViewById(R.id.download_list);
         final List<DownloadData> datas = new ArrayList<>();
-        datas.add(new DownloadData(url1, path, "欢乐斗地主.apk"));
-        datas.add(new DownloadData(url2, path, "球球大作战.apk"));
-        datas.add(new DownloadData(url3, path, "节奏大师.apk"));
-        datas.add(new DownloadData(url4, path, "部落冲突.apk"));
-        datas.add(new DownloadData(url5, path, "捕鱼达人.apk"));
+        if (Db.getInstance(mContext).getData(url1) != null){
+            datas.add(Db.getInstance(mContext).getData(url1));
+        }else{
+            datas.add(new DownloadData(url1, path, "欢乐斗地主.apk"));
+        }
+
+        if (Db.getInstance(mContext).getData(url2) != null){
+            datas.add(Db.getInstance(mContext).getData(url2));
+        }else{
+            datas.add(new DownloadData(url2, path, "球球大作战.apk"));
+        }
+
+        if (Db.getInstance(mContext).getData(url3) != null){
+            datas.add(Db.getInstance(mContext).getData(url3));
+        }else{
+            datas.add(new DownloadData(url3, path, "节奏大师.apk"));
+        }
+
+        if (Db.getInstance(mContext).getData(url4) != null){
+            datas.add(Db.getInstance(mContext).getData(url4));
+        }else{
+            datas.add(new DownloadData(url4, path, "部落冲突.apk"));
+        }
+
+        if (Db.getInstance(mContext).getData(url5) != null){
+            datas.add(Db.getInstance(mContext).getData(url5));
+        }else{
+            datas.add(new DownloadData(url5, path, "捕鱼达人.apk"));
+        }
 
         downloadListAdapter = new DownloadListAdapter(this, datas, false);
 

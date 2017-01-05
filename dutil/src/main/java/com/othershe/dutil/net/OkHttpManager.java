@@ -1,7 +1,14 @@
 package com.othershe.dutil.net;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.security.KeyStore;
+import java.security.SecureRandom;
+import java.security.cert.CertificateFactory;
 import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -10,14 +17,13 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class OkHttpManager {
-    private OkHttpClient okHttpClient;
+    private OkHttpClient.Builder builder;
 
     private OkHttpManager() {
-        okHttpClient = new OkHttpClient.Builder()
+        builder = new OkHttpClient.Builder()
                 .connectTimeout(10, TimeUnit.SECONDS)
                 .writeTimeout(10, TimeUnit.SECONDS)
-                .readTimeout(10, TimeUnit.SECONDS)
-                .build();
+                .readTimeout(10, TimeUnit.SECONDS);
     }
 
     public static OkHttpManager getInstance() {
@@ -43,7 +49,7 @@ public class OkHttpManager {
                 .header("Range", "bytes=" + start + "-" + end)
                 .build();
 
-        Call call = okHttpClient.newCall(request);
+        Call call = builder.build().newCall(request);
         call.enqueue(callback);
 
         return call;
@@ -62,7 +68,7 @@ public class OkHttpManager {
                 .header("Range", "bytes=0-")
                 .build();
 
-        return okHttpClient.newCall(request).execute();
+        return builder.build().newCall(request).execute();
     }
 
     /**
@@ -80,6 +86,41 @@ public class OkHttpManager {
                 .header("If-Range", lastModify)
                 .build();
 
-        return okHttpClient.newCall(request).execute();
+        return builder.build().newCall(request).execute();
+    }
+
+    /**
+     * https请求时初始化证书
+     *
+     * @param certificates
+     * @return
+     */
+    public void setCertificates(InputStream... certificates) {
+        try {
+            CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            keyStore.load(null);
+            int index = 0;
+            for (InputStream certificate : certificates) {
+                String certificateAlias = Integer.toString(index++);
+                keyStore.setCertificateEntry(certificateAlias, certificateFactory.generateCertificate(certificate));
+                try {
+                    if (certificate != null)
+                        certificate.close();
+                } catch (IOException e) {
+                }
+            }
+
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+
+            trustManagerFactory.init(keyStore);
+            sslContext.init(null, trustManagerFactory.getTrustManagers(), new SecureRandom());
+
+            builder.sslSocketFactory(sslContext.getSocketFactory());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

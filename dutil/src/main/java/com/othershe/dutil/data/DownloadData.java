@@ -3,6 +3,8 @@ package com.othershe.dutil.data;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import static com.othershe.dutil.data.Consts.NONE;
+
 public class DownloadData implements Parcelable {
 
     private String url;
@@ -11,7 +13,7 @@ public class DownloadData implements Parcelable {
     private int currentLength;
     private int totalLength;
     private float percentage;
-    private int state;
+    private int state = NONE;
     private int childTaskCount;
     private long date;
     private String lastModify;

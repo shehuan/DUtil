@@ -41,6 +41,8 @@ public class FileTask implements Runnable {
     private int EACH_TEMP_SIZE = 16;
     private int TEMP_FILE_TOTAL_SIZE;//临时文件的总大小
 
+    private int BUFFER_SIZE = 8192;
+
     private Context context;
 
     private String url;
@@ -69,7 +71,6 @@ public class FileTask implements Runnable {
 
     @Override
     public void run() {
-        Log.e("thread_name", Thread.currentThread().getName());
         try {
             File saveFile = new File(path, name);
             File tempFile = new File(path, name + ".temp");
@@ -212,7 +213,7 @@ public class FileTask implements Runnable {
 
             inputStream = response.body().byteStream();
             int len;
-            byte[] buffer = new byte[4096];
+            byte[] buffer = new byte[BUFFER_SIZE];
 
             while ((len = inputStream.read(buffer)) != -1) {
                 if (IS_CANCEL) {
@@ -274,7 +275,7 @@ public class FileTask implements Runnable {
             outputStream = new FileOutputStream(file);
 
             int len;
-            byte[] buffer = new byte[4096];
+            byte[] buffer = new byte[BUFFER_SIZE];
             while ((len = inputStream.read(buffer)) != -1) {
                 if (IS_CANCEL) {
                     handler.sendEmptyMessage(CANCEL);

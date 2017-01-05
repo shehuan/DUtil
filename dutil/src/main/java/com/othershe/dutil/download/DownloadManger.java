@@ -5,7 +5,9 @@ import android.content.Context;
 import com.othershe.dutil.callback.DownloadCallback;
 import com.othershe.dutil.data.DownloadData;
 import com.othershe.dutil.db.Db;
+import com.othershe.dutil.net.OkHttpManager;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,18 +66,56 @@ public class DownloadManger {
         downloadData.setChildTaskCount(childTaskCount);
     }
 
+    /**
+     * 链式开启下载
+     *
+     * @param downloadCallback
+     * @return
+     */
     public DownloadManger start(DownloadCallback downloadCallback) {
         execute(downloadData, downloadCallback);
         return downloadManager;
     }
 
+    /**
+     * data + callback 形式直接开始下载
+     *
+     * @param downloadData
+     * @param downloadCallback
+     * @return
+     */
+    public DownloadManger start(DownloadData downloadData, DownloadCallback downloadCallback) {
+        execute(downloadData, downloadCallback);
+        return downloadManager;
+    }
+
+    /**
+     * 根据url开始下载（需先注册监听）
+     *
+     * @param url
+     */
     public void start(String url) {
         execute(downloadDataMap.get(url), callbackMap.get(url));
     }
 
+    /**
+     * 注册监听
+     *
+     * @param downloadData
+     * @param downloadCallback
+     */
     public void setOnDownloadCallback(DownloadData downloadData, DownloadCallback downloadCallback) {
         downloadDataMap.put(downloadData.getUrl(), downloadData);
         callbackMap.put(downloadData.getUrl(), downloadCallback);
+    }
+
+    /**
+     * 配置https证书
+     *
+     * @param certificates
+     */
+    public void setCertificates(InputStream... certificates) {
+        OkHttpManager.getInstance().setCertificates(certificates);
     }
 
     /**
@@ -95,6 +135,19 @@ public class DownloadManger {
      */
     public List<DownloadData> getAllDbData() {
         return Db.getInstance(context).getAllData();
+    }
+
+    /**
+     * 根据url获得下载队列中的data
+     *
+     * @param url
+     * @return
+     */
+    public DownloadData getCurrentData(String url) {
+        if (progressHandlerMap.containsKey(url)) {
+            return progressHandlerMap.get(url).getDownloadData();
+        }
+        return null;
     }
 
     /**
@@ -193,7 +246,7 @@ public class DownloadManger {
     }
 
     public void innerCancel(String url, boolean isNeedRestart) {
-        if (progressHandlerMap.get(url) != null){
+        if (progressHandlerMap.get(url) != null) {
             if (progressHandlerMap.get(url).getCurrentState() == NONE) {
                 //取消缓存队列中等待下载的任务
                 ThreadPool.getInstance().getThreadPoolExecutor().remove(fileTaskMap.get(url));

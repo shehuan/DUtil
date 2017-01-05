@@ -18,6 +18,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
             + "child_task_count integer, "
             + "current_length integer, "
             + "total_length integer, "
+            + "percentage real, "
             + "last_modify text, "
             + "date text)";
 
