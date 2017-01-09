@@ -8,13 +8,14 @@ import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
+import android.util.SparseArray;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class NotificationUtil {
 
-    private static Map<Integer, NotificationCompat.Builder> notificationMap = new HashMap<>();
+    private static SparseArray<NotificationCompat.Builder> notificationMap = new SparseArray<>();
 
     private static NotificationManager notificationManager;
 

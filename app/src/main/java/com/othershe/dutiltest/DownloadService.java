@@ -17,15 +17,10 @@ import java.io.File;
 public class DownloadService extends Service {
     private Context mContext;
 
-    private String path;
-    private String name;
-    private String url;
-    private int notifyId;
-
     private DownloadBinder mBinder = new DownloadBinder();
 
     class DownloadBinder extends Binder {
-        public void startDownload() {
+        public void startDownload(String path, final String name, String url, final int notifyId) {
             DUtil.init(mContext)
                     .path(path)
                     .name(name)
@@ -56,8 +51,27 @@ public class DownloadService extends Service {
                     });
         }
 
-        public float getProgress() {
-            return 1;
+        public void pauseDownload(String url) {
+            DownloadManger.getInstance(mContext).pause(url);
+        }
+
+        public void resumeDownload(String url) {
+            DownloadManger.getInstance(mContext).resume(url);
+        }
+
+        public void cancelDownload(String url) {
+            DownloadManger.getInstance(mContext).cancel(url);
+        }
+
+        public void restartDownload(String url) {
+            DownloadManger.getInstance(mContext).restart(url);
+        }
+
+        public float getProgress(String url) {
+            if (DownloadManger.getInstance(mContext).getCurrentData(url) != null) {
+                return DownloadManger.getInstance(mContext).getCurrentData(url).getPercentage();
+            }
+            return -1;
         }
     }
 
@@ -75,13 +89,6 @@ public class DownloadService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent != null) {
-            path = intent.getStringExtra("path");
-            name = intent.getStringExtra("name");
-            url = intent.getStringExtra("url");
-            notifyId = intent.getIntExtra("notifyId", 0);
-        }
-
         return super.onStartCommand(intent, flags, startId);
     }
 }

@@ -41,7 +41,7 @@ public class FileTask implements Runnable {
     private int EACH_TEMP_SIZE = 16;
     private int TEMP_FILE_TOTAL_SIZE;//临时文件的总大小
 
-    private int BUFFER_SIZE = 8192;
+    private int BUFFER_SIZE = 2048;
 
     private Context context;
 
@@ -204,6 +204,7 @@ public class FileTask implements Runnable {
 
         try {
             saveRandomAccessFile = new RandomAccessFile(saveFile, "rwd");
+//            saveRandomAccessFile.seek(range.start[index]);
             saveChannel = saveRandomAccessFile.getChannel();
             MappedByteBuffer saveBuffer = saveChannel.map(READ_WRITE, range.start[index], range.end[index] - range.start[index] + 1);
 
@@ -223,6 +224,7 @@ public class FileTask implements Runnable {
                 }
 
                 saveBuffer.put(buffer, 0, len);
+//                saveRandomAccessFile.write(buffer, 0, len);
                 tempBuffer.putLong(index * EACH_TEMP_SIZE, tempBuffer.getLong(index * EACH_TEMP_SIZE) + len);
                 onProgress(len);
 

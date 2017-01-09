@@ -81,10 +81,9 @@ public class ProgressHandler {
                     synchronized (this) {
                         currentLength += msg.arg1;
 
-                        downloadData.setCurrentLength(currentLength);
+                        downloadData.setPercentage(Utils.getPercentage(currentLength, totalLength));
 
-                        //默认500毫秒回调一次
-                        if (downloadCallback != null && (System.currentTimeMillis() - lastProgressTime >= 500 || currentLength == totalLength)) {
+                        if (downloadCallback != null && (System.currentTimeMillis() - lastProgressTime >= 20 || currentLength == totalLength)) {
                             downloadCallback.onProgress(currentLength, totalLength, Utils.getPercentage(currentLength, totalLength));
                             lastProgressTime = System.currentTimeMillis();
                         }
