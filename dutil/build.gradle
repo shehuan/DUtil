@@ -1,5 +1,10 @@
 apply plugin: 'com.android.library'
 
+// JitPack Maven
+apply plugin: 'com.github.dcendents.android-maven'
+// Your Group
+group='com.github.Othershe'
+
 android {
     compileSdkVersion 24
     buildToolsVersion "24.0.3"
