@@ -19,6 +19,6 @@ allprojects {
 
 ``` gradle
 dependencies {
-        compile 'com.github.GcsSloop:ViewSupport:v1.3.0'
+        compile 'com.github.Othershe:DUtil:1.0.0'
 }
 ```
