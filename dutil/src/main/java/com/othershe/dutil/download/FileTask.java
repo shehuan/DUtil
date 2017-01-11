@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 
 import com.othershe.dutil.Utils.Utils;
 import com.othershe.dutil.data.DownloadData;
@@ -41,7 +40,7 @@ public class FileTask implements Runnable {
     private int EACH_TEMP_SIZE = 16;
     private int TEMP_FILE_TOTAL_SIZE;//临时文件的总大小
 
-    private int BUFFER_SIZE = 2048;
+    private int BUFFER_SIZE = 4096;
 
     private Context context;
 
@@ -116,10 +115,10 @@ public class FileTask implements Runnable {
             Db.getInstance(context).deleteData(url);
             Utils.deleteFile(saveFile, tempFile);
 
-            saveRandomAccessFile = new RandomAccessFile(saveFile, "rwd");
+            saveRandomAccessFile = new RandomAccessFile(saveFile, "rws");
             saveRandomAccessFile.setLength(fileLength);
 
-            tempRandomAccessFile = new RandomAccessFile(tempFile, "rwd");
+            tempRandomAccessFile = new RandomAccessFile(tempFile, "rws");
             tempRandomAccessFile.setLength(TEMP_FILE_TOTAL_SIZE);
             tempChannel = tempRandomAccessFile.getChannel();
             MappedByteBuffer buffer = tempChannel.map(READ_WRITE, 0, TEMP_FILE_TOTAL_SIZE);
@@ -200,15 +199,12 @@ public class FileTask implements Runnable {
         RandomAccessFile tempRandomAccessFile = null;
         FileChannel tempChannel = null;
 
-        Log.e("range-o" + index, range.start[index] + " = " + range.end[index]);
-
         try {
-            saveRandomAccessFile = new RandomAccessFile(saveFile, "rwd");
-//            saveRandomAccessFile.seek(range.start[index]);
+            saveRandomAccessFile = new RandomAccessFile(saveFile, "rws");
             saveChannel = saveRandomAccessFile.getChannel();
             MappedByteBuffer saveBuffer = saveChannel.map(READ_WRITE, range.start[index], range.end[index] - range.start[index] + 1);
 
-            tempRandomAccessFile = new RandomAccessFile(tempFile, "rwd");
+            tempRandomAccessFile = new RandomAccessFile(tempFile, "rws");
             tempChannel = tempRandomAccessFile.getChannel();
             MappedByteBuffer tempBuffer = tempChannel.map(READ_WRITE, 0, TEMP_FILE_TOTAL_SIZE);
 
@@ -224,7 +220,6 @@ public class FileTask implements Runnable {
                 }
 
                 saveBuffer.put(buffer, 0, len);
-//                saveRandomAccessFile.write(buffer, 0, len);
                 tempBuffer.putLong(index * EACH_TEMP_SIZE, tempBuffer.getLong(index * EACH_TEMP_SIZE) + len);
                 onProgress(len);
 
@@ -312,7 +307,7 @@ public class FileTask implements Runnable {
         RandomAccessFile record = null;
         FileChannel channel = null;
         try {
-            record = new RandomAccessFile(tempFile, "rwd");
+            record = new RandomAccessFile(tempFile, "rws");
             channel = record.getChannel();
             MappedByteBuffer buffer = channel.map(READ_WRITE, 0, TEMP_FILE_TOTAL_SIZE);
             long[] startByteArray = new long[childTaskCount];

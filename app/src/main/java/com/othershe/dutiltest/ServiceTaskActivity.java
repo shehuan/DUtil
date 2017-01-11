@@ -22,16 +22,12 @@ public class ServiceTaskActivity extends AppCompatActivity implements View.OnCli
 
     private DownloadService.DownloadBinder downloadBinder;
 
-    private String url = "http://1.82.242.43/imtt.dd.qq.com/16891/A5D16F8C32981E2BBD86DF472E542757.apk";
+    private String url = "http://1.199.93.153/imtt.dd.qq.com/16891/5FE88135737E977CCCE1A4DAC9FAFFCB.apk";
 
     private ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             downloadBinder = (DownloadService.DownloadBinder) service;
-            downloadBinder.startDownload(Environment.getExternalStorageDirectory() + "/DUtil/",
-                    "快手.apk",
-                    url,
-                    (int) System.currentTimeMillis());
         }
 
         @Override
@@ -55,6 +51,9 @@ public class ServiceTaskActivity extends AppCompatActivity implements View.OnCli
         mResume.setOnClickListener(this);
         mCancel.setOnClickListener(this);
         mRestart.setOnClickListener(this);
+
+        Intent intent = new Intent(this, DownloadService.class);
+        bindService(intent, connection, BIND_AUTO_CREATE);
     }
 
 
@@ -62,15 +61,10 @@ public class ServiceTaskActivity extends AppCompatActivity implements View.OnCli
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.start:
-                Intent intent = new Intent(this, DownloadService.class);
-                bindService(intent, connection, BIND_AUTO_CREATE);
-
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.e("sssssss", downloadBinder.getProgress(url) + "%");
-                    }
-                }, 3000);
+                downloadBinder.startDownload(Environment.getExternalStorageDirectory() + "/DUtil/",
+                        "高德地图.apk",
+                        url,
+                        (int) System.currentTimeMillis());
                 break;
             case R.id.pause:
                 downloadBinder.pauseDownload(url);
@@ -85,5 +79,11 @@ public class ServiceTaskActivity extends AppCompatActivity implements View.OnCli
                 downloadBinder.restartDownload(url);
                 break;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        unbindService(connection);
+        super.onDestroy();
     }
 }

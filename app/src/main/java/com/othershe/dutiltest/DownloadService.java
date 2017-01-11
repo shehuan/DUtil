@@ -30,7 +30,7 @@ public class DownloadService extends Service {
                     .start(new SimpleDownloadCallback() {
                         @Override
                         public void onStart(long currentSize, long totalSize, float progress) {
-                            NotificationUtil.createProgressNotification(mContext, name, "快来玩我呀！！！", R.mipmap.ic_launcher, notifyId);
+                            NotificationUtil.createProgressNotification(mContext, name, "出行必备...", R.mipmap.ic_launcher, notifyId);
                         }
 
                         @Override
