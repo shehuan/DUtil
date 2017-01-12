@@ -94,8 +94,9 @@ public class DownloadManger {
      *
      * @param url
      */
-    public void start(String url) {
+    public DownloadManger start(String url) {
         execute(downloadDataMap.get(url), callbackMap.get(url));
+        return downloadManager;
     }
 
     /**
