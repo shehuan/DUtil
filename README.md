@@ -1,5 +1,9 @@
 # DUtil
 
+**一个基于okhttp的下载工具，支持多线程、断点续传下载，以及下载管理。**
+
+[原理、以及用法](http://www.jianshu.com/p/6c57c93009e4)
+
 ## 如何添加到AndroidStudio
 
 **Step 1. 添加JitPack仓库**
