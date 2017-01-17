@@ -41,6 +41,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 taskManage.setOnClickListener(this);
                 serviceTask.setOnClickListener(this);
             }
+        } else {
+            singleTask.setOnClickListener(this);
+            taskManage.setOnClickListener(this);
+            serviceTask.setOnClickListener(this);
         }
     }
 
