@@ -30,6 +30,11 @@ public abstract class SimpleDownloadCallback implements DownloadCallback {
     }
 
     @Override
+    public void onWait() {
+
+    }
+
+    @Override
     public void onError(String error) {
 
     }
