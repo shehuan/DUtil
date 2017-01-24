@@ -103,17 +103,22 @@ public class FileTask implements Runnable {
         RandomAccessFile saveRandomAccessFile = null;
         RandomAccessFile tempRandomAccessFile = null;
         FileChannel tempChannel = null;
+        File saveFile;
+        File tempFile;
 
         try {
 
-            File saveFile = Utils.createFile(path, name);
-            File tempFile = Utils.createFile(path, name + ".temp");
+            saveFile = new File(path, name);
+            tempFile = new File(path, name + ".temp");
 
             long fileLength = response.body().contentLength();
             onStart(fileLength, 0, Utils.getLastModify(response), true);
 
             Db.getInstance(context).deleteData(url);
             Utils.deleteFile(saveFile, tempFile);
+
+            saveFile = Utils.createFile(path, name);
+            tempFile = Utils.createFile(path, name + ".temp");
 
             saveRandomAccessFile = new RandomAccessFile(saveFile, "rws");
             saveRandomAccessFile.setLength(fileLength);
