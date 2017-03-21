@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.security.cert.CertificateFactory;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
@@ -12,8 +13,10 @@ import javax.net.ssl.TrustManagerFactory;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class OkHttpManager {
@@ -35,6 +38,7 @@ public class OkHttpManager {
     }
 
     /**
+     * 下载
      * 异步（根据断点请求）
      *
      * @param url
@@ -56,6 +60,7 @@ public class OkHttpManager {
     }
 
     /**
+     * 下载
      * 同步请求
      *
      * @param url
@@ -72,6 +77,7 @@ public class OkHttpManager {
     }
 
     /**
+     * 下载
      * 文件存在的情况下可判断服务端文件是否已经更改
      *
      * @param url
@@ -90,6 +96,7 @@ public class OkHttpManager {
     }
 
     /**
+     * 下载
      * https请求时初始化证书
      *
      * @param certificates
@@ -122,5 +129,57 @@ public class OkHttpManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 上传
+     * 异步
+     *
+     * @param url
+     * @param requestBody
+     * @param callback
+     * @return
+     */
+    public Call initRequest(String url, RequestBody requestBody, final Callback callback) {
+        Request request = new Request.Builder()
+                .url(url)
+                .post(requestBody)
+                .build();
+
+        Call call = builder.build().newCall(request);
+        call.enqueue(callback);
+
+        return call;
+    }
+
+    /**
+     * 上传
+     * 异步
+     *
+     * @param url
+     * @param requestBody
+     * @param headers
+     * @param callback
+     * @return
+     */
+    public Call initRequest(String url, RequestBody requestBody, Map<String, String> headers, final Callback callback) {
+        Request.Builder requestBuilder = new Request.Builder()
+                .url(url)
+                .post(requestBody);
+
+        Headers.Builder headerBuilder;
+        if (headers != null && headers.size() > 0) {
+            headerBuilder = new Headers.Builder();
+
+            for (String key : headers.keySet()) {
+                headerBuilder.add(key, headers.get(key));
+            }
+            requestBuilder.headers(headerBuilder.build());
+        }
+
+        Call call = builder.build().newCall(requestBuilder.build());
+        call.enqueue(callback);
+
+        return call;
     }
 }
