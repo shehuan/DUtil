@@ -33,4 +33,13 @@
         android:layout_marginTop="20dp"
         android:gravity="center"
         android:text="Service_Task" />
+
+
+    <Button
+        android:id="@+id/upload"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:text="upload" />
 </LinearLayout>

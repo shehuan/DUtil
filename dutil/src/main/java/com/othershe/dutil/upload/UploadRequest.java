@@ -1,5 +1,7 @@
 package com.othershe.dutil.upload;
 
+import android.text.TextUtils;
+
 import com.othershe.dutil.callback.UploadCallback;
 import com.othershe.dutil.net.OkHttpManager;
 
@@ -18,12 +20,14 @@ public class UploadRequest {
     private File file;
     private MediaType mediaType;
 
-    public UploadRequest(String url, File file, MediaType mediaType) {
+    public UploadRequest(String url, File file, String type) {
         this.url = url;
         this.file = file;
 
+        type = TextUtils.isEmpty(type) ? "application/octet-stream" : type;
+
         if (mediaType == null) {
-            this.mediaType = MediaType.parse("application/octet-stream");
+            this.mediaType = MediaType.parse(type);
         }
     }
 
