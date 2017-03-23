@@ -1,13 +1,21 @@
 package com.othershe.dutil.upload;
 
+import com.othershe.dutil.data.UploadByte;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ByteUploadBuilder extends BaseUploadBuilder<ByteUploadBuilder> {
-    private byte[] bytes;
-    private String type;
-    private String name;
+    private String type;//媒体类型
+    private List<UploadByte> byteList = new ArrayList<>();
 
-    public ByteUploadBuilder addBytes(byte[] bytes) {
-        this.bytes = bytes;
+    public ByteUploadBuilder addByte(String name, String filename, byte[] bytes) {
+        byteList.add(new UploadByte(name, filename, bytes));
+        return this;
+    }
+
+    public ByteUploadBuilder addBytes(List<UploadByte> byteList) {
+        this.byteList = byteList;
         return this;
     }
 
@@ -16,13 +24,8 @@ public class ByteUploadBuilder extends BaseUploadBuilder<ByteUploadBuilder> {
         return this;
     }
 
-    public ByteUploadBuilder addName(String name) {
-        this.name = name;
-        return this;
-    }
-
     public BytesUploadRequest build() {
-        return new BytesUploadRequest(url, bytes, name, type, params, headers);
+        return new BytesUploadRequest(url, byteList, type, params, headers);
     }
 
 }

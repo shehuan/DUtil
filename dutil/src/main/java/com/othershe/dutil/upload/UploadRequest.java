@@ -18,34 +18,39 @@ public class UploadRequest {
 
     private String url;
     private File file;
-    private MediaType mediaType;
+    private String type;
 
     public UploadRequest(String url, File file, String type) {
         this.url = url;
         this.file = file;
-
-        type = TextUtils.isEmpty(type) ? "application/octet-stream" : type;
-
-        if (mediaType == null) {
-            this.mediaType = MediaType.parse(type);
-        }
+        this.type = type;
     }
 
     public void upload(final UploadCallback callback) {
 
-        RequestBody fileBody = RequestBody.create(mediaType, file);
+        if (callback != null) {
+            callback.onStart();
+        }
+
+        type = TextUtils.isEmpty(type) ? "application/octet-stream" : type;
+
+        RequestBody fileBody = RequestBody.create(MediaType.parse(type), file);
         ProgressRequestBody progressRequestBody = new ProgressRequestBody(fileBody, callback);
 
         OkHttpManager.getInstance().initRequest(url, progressRequestBody, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                callback.onError(e.toString());
+                if (callback != null){
+                    callback.onError(e.toString());
+                }
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (response != null && response.isSuccessful()) {
-                    callback.onFinish();
+                    if (callback != null) {
+                        callback.onFinish(response.body().string());
+                    }
                 }
             }
         });

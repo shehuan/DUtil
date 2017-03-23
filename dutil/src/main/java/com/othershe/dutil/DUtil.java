@@ -4,7 +4,7 @@ import android.content.Context;
 
 import com.othershe.dutil.download.DBuilder;
 import com.othershe.dutil.upload.ByteUploadBuilder;
-import com.othershe.dutil.upload.FormUploadBuilder;
+import com.othershe.dutil.upload.FileUploadBuilder;
 
 public class DUtil {
 
@@ -23,8 +23,8 @@ public class DUtil {
      *
      * @return
      */
-    public static FormUploadBuilder initFileUpload() {
-        return new FormUploadBuilder();
+    public static FileUploadBuilder initFileUpload() {
+        return new FileUploadBuilder();
     }
 
     /**

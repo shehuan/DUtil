@@ -64,6 +64,5 @@ public class ProgressRequestBody extends RequestBody {
                 callback.onProgress(currentLength, contentLength(), Utils.getPercentage((int) currentLength, (int) contentLength()));
             }
         }
-
     }
 }

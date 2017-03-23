@@ -1,7 +1,5 @@
 package com.othershe.dutil.upload;
 
-import android.util.Log;
-
 import com.othershe.dutil.callback.UploadCallback;
 import com.othershe.dutil.net.OkHttpManager;
 
@@ -40,9 +38,8 @@ public abstract class BaseUploadRequest {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (response != null && response.isSuccessful()) {
-                    Log.e("sss", response.body().string());
                     if (callback != null) {
-                        callback.onFinish();
+                        callback.onFinish(response.body().string());
                     }
                 }
             }

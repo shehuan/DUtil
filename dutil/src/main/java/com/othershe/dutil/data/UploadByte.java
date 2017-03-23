@@ -1,21 +1,19 @@
 package com.othershe.dutil.data;
 
-import java.io.File;
-
-public class UploadFile {
+public class UploadByte {
     private String name;
     private String filename;
-    private File file;
+    private byte[] bytes;
 
     /**
      * @param name 表单中name属性的值
      * @param filename 文件名
-     * @param file 要上传的文件
+     * @param bytes 要上传的字节流
      */
-    public UploadFile(String name, String filename, File file) {
+    public UploadByte(String name, String filename, byte[] bytes) {
         this.name = name;
         this.filename = filename;
-        this.file = file;
+        this.bytes = bytes;
     }
 
     public String getName() {
@@ -34,11 +32,11 @@ public class UploadFile {
         this.filename = filename;
     }
 
-    public File getFile() {
-        return file;
+    public byte[] getBytes() {
+        return bytes;
     }
 
-    public void setFile(File file) {
-        this.file = file;
+    public void setBytes(byte[] bytes) {
+        this.bytes = bytes;
     }
 }

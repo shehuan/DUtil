@@ -18,9 +18,7 @@ import android.widget.Toast;
 import com.othershe.dutil.DUtil;
 import com.othershe.dutil.callback.UploadCallback;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -74,51 +72,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(new Intent(this, ServiceTaskActivity.class));
                 break;
             case R.id.upload:
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
-                        ByteArrayOutputStream bs = new ByteArrayOutputStream();
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bs);
-
-                        try {
-                            Thread.currentThread().sleep(3000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-
-                        DUtil.initByteUpload()
-                                .url("http://eds.awizdata.com/OA-serviceapp-datahandler/datahandler/photo/upload")
-                                .addParam("vcode", "31d13464e3c44cb495e992d61fcc759d")
-                                .addParam("unique", "869271025990968")
-                                .addBytes(bs.toByteArray())
-                                .build()
-                                .upload(new UploadCallback() {
-                                    @Override
-                                    public void onStart() {
-                                        Log.e("upload", "start");
-                                    }
-
-                                    @Override
-                                    public void onProgress(long currentSize, long totalSize, float progress) {
-                                        Log.e("upload", progress + "");
-                                    }
-
-                                    @Override
-                                    public void onFinish() {
-                                        Log.e("upload", "finish");
-                                    }
-
-                                    @Override
-                                    public void onError(String error) {
-                                        Log.e("upload", error);
-                                    }
-                                });
-                    }
-                }).start();
-
+                testUpload();
                 break;
         }
+    }
+
+    private void testUpload() {
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+        ByteArrayOutputStream bs = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bs);
+        DUtil.initByteUpload()
+                .url("http://xxx.awizdata.com/OA-serviceapp-datahandler/datahandler/photo/upload")
+                .addParam("vcode", "31d13464e3c44cb495e992d61fcc759d")
+                .addParam("unique", "869271025990968")
+                .addByte("file", "BeautyImage.jpg", bs.toByteArray())
+                .build()
+                .upload(new UploadCallback() {
+                    @Override
+                    public void onStart() {
+                        Log.e("upload", "start");
+                    }
+
+                    @Override
+                    public void onProgress(long currentSize, long totalSize, float progress) {
+                        Log.e("upload", progress + "");
+                    }
+
+                    @Override
+                    public void onFinish(String response) {
+                        Log.e("upload", "finish###" + response);
+//                                Toast.makeText(MainActivity.this, "dddddddd", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        Log.e("upload", error);
+                    }
+                });
     }
 
     @Override

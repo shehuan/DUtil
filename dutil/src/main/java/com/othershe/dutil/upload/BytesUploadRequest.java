@@ -2,6 +2,9 @@ package com.othershe.dutil.upload;
 
 import android.text.TextUtils;
 
+import com.othershe.dutil.data.UploadByte;
+
+import java.util.List;
 import java.util.Map;
 
 import okhttp3.MediaType;
@@ -9,29 +12,24 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 
 public class BytesUploadRequest extends BaseUploadRequest {
-    private byte[] bytes;
     private String type;
-    private String name;
+    private List<UploadByte> byteList;
 
 
-    public BytesUploadRequest(String url, byte[] bytes, String name, String type, Map<String, String> params, Map<String, String> headers) {
+    public BytesUploadRequest(String url, List<UploadByte> byteList, String type, Map<String, String> params, Map<String, String> headers) {
         this.url = url;
-        this.bytes = bytes;
-        this.name = name;
         this.type = type;
+        this.byteList = byteList;
         this.params = params;
         this.headers = headers;
     }
 
     @Override
     protected void buildRequestBody(MultipartBody.Builder builder) {
-        if (TextUtils.isEmpty(type)) {
-            type = "application/octet-stream";
+        type = TextUtils.isEmpty(type) ? "application/octet-stream" : type;
+        for (UploadByte bytes : byteList) {
+            RequestBody fileBody = RequestBody.create(MediaType.parse(type), bytes.getBytes());
+            builder.addFormDataPart(bytes.getName(), bytes.getFilename(), fileBody);
         }
-        if (TextUtils.isEmpty(name)){
-            name = "";
-        }
-        RequestBody fileBody = RequestBody.create(MediaType.parse(type), bytes);
-        builder.addFormDataPart("file", "BeautyImage.jpg", fileBody);
     }
 }
