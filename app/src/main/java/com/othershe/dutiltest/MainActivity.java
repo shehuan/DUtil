@@ -81,12 +81,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
         ByteArrayOutputStream bs = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bs);
-        DUtil.initByteUpload()
-                .url("http://xxx.awizdata.com/OA-serviceapp-datahandler/datahandler/photo/upload")
+        DUtil.initFormUpload()
+                .url("http://eds.awizdata.com/OA-serviceapp-datahandler/datahandler/photo/upload")
                 .addParam("vcode", "31d13464e3c44cb495e992d61fcc759d")
                 .addParam("unique", "869271025990968")
                 .addByte("file", "BeautyImage.jpg", bs.toByteArray())
-                .build()
+                .bytesUploadBuild()
                 .upload(new UploadCallback() {
                     @Override
                     public void onStart() {
