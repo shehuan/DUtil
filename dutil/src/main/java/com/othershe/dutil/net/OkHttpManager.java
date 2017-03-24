@@ -137,27 +137,6 @@ public class OkHttpManager {
      *
      * @param url
      * @param requestBody
-     * @param callback
-     * @return
-     */
-    public Call initRequest(String url, RequestBody requestBody, final Callback callback) {
-        Request request = new Request.Builder()
-                .url(url)
-                .post(requestBody)
-                .build();
-
-        Call call = builder.build().newCall(request);
-        call.enqueue(callback);
-
-        return call;
-    }
-
-    /**
-     * 上传
-     * 异步
-     *
-     * @param url
-     * @param requestBody
      * @param headers
      * @param callback
      * @return

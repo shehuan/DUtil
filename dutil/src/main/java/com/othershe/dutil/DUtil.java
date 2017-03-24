@@ -3,6 +3,7 @@ package com.othershe.dutil;
 import android.content.Context;
 
 import com.othershe.dutil.download.DBuilder;
+import com.othershe.dutil.upload.DirectUploadBuilder;
 import com.othershe.dutil.upload.FormUploadBuilder;
 
 public class DUtil {
@@ -24,5 +25,14 @@ public class DUtil {
      */
     public static FormUploadBuilder initFormUpload() {
         return new FormUploadBuilder();
+    }
+
+    /**
+     * 将文件作为请求体上传
+     *
+     * @return
+     */
+    public static DirectUploadBuilder initUpload() {
+        return new DirectUploadBuilder();
     }
 }

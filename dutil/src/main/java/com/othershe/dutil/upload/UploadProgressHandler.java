@@ -23,7 +23,7 @@ public class UploadProgressHandler {
                     uploadCallback.onStart();
                     break;
                 case PROGRESS:
-                    uploadCallback.onProgress(msg.arg1, msg.arg2, Utils.getPercentage(msg.arg2, msg.arg1));
+                    uploadCallback.onProgress(msg.arg1, msg.arg2, Utils.getPercentage(msg.arg1, msg.arg2));
                     break;
                 case FINISH:
                     uploadCallback.onFinish(msg.obj.toString());

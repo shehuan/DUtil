@@ -11,12 +11,12 @@ import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
 import static com.othershe.dutil.data.Consts.ERROR;
 import static com.othershe.dutil.data.Consts.FINISH;
+import static com.othershe.dutil.data.Consts.START;
 
 public abstract class BaseUploadRequest {
 
@@ -26,11 +26,15 @@ public abstract class BaseUploadRequest {
     private Handler handler;
 
     public Call upload(final UploadCallback callback) {
+        if (callback == null) {
+            throw new IllegalArgumentException("UploadCallback can not be null");
+        }
+
         UploadProgressHandler progressHandler = new UploadProgressHandler(callback);
         handler = progressHandler.getHandler();
+        handler.sendEmptyMessage(START);
 
         RequestBody requestBody = initRequestBody();
-
         requestBody = new ProgressRequestBody(requestBody, handler);
 
         return OkHttpManager.getInstance().initRequest(url, requestBody, headers, new Callback() {
@@ -54,24 +58,6 @@ public abstract class BaseUploadRequest {
         });
     }
 
-    private RequestBody initRequestBody() {
-        RequestBody requestBody;
+    protected abstract RequestBody initRequestBody();
 
-        MultipartBody.Builder builder = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM);
-
-        if (params != null && params.size() > 0) {
-            for (String key : params.keySet()) {
-                builder.addFormDataPart(key, params.get(key));
-            }
-        }
-
-        buildRequestBody(builder);
-
-        requestBody = builder.build();
-
-        return requestBody;
-    }
-
-    protected abstract void buildRequestBody(MultipartBody.Builder builder);
 }

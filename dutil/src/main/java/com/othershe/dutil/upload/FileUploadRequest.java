@@ -10,10 +10,9 @@ import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 
-public class FileUploadRequest extends BaseUploadRequest {
+public class FileUploadRequest extends FormUploadRequest {
 
     private List<UploadFile> files;
-
 
     public FileUploadRequest(String url, List<UploadFile> files, Map<String, String> params, Map<String, String> headers) {
         this.url = url;
@@ -28,6 +27,5 @@ public class FileUploadRequest extends BaseUploadRequest {
             RequestBody fileBody = RequestBody.create(MediaType.parse(Utils.getMimeType(file.getName())), file.getFile());
             builder.addFormDataPart(file.getName(), file.getFilename(), fileBody);
         }
-
     }
 }

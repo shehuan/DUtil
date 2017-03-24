@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -16,9 +17,11 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.othershe.dutil.DUtil;
+import com.othershe.dutil.callback.SimpleUploadCallback;
 import com.othershe.dutil.callback.UploadCallback;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -107,6 +110,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onError(String error) {
                         Log.e("upload", error);
+                    }
+                });
+
+        DUtil.initFormUpload()
+                .url("http://192.168.1.233:8044/OA-serviceapp-datahandler/datahandler/photo/upload")
+                .addParam("vcode", "31d13464e3c44cb495e992d61fcc759d")
+                .addParam("unique", "869271025990968")
+                .addFile("file", "BeautyImage.jpg", new File(Environment.getExternalStorageDirectory() + "/DUtil/", "aaa.jpg"))
+                .fileUploadBuild()
+                .upload(new SimpleUploadCallback() {
+                    @Override
+                    public void onStart() {
+                        super.onStart();
+                    }
+
+                    @Override
+                    public void onFinish(String response) {
+                        super.onFinish(response);
                     }
                 });
     }

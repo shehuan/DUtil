@@ -73,7 +73,7 @@ public class FormUploadBuilder extends BaseUploadBuilder<FormUploadBuilder> {
     }
 
     /**
-     * 本地文件类型
+     * 本地文件类型（表单式）
      *
      * @return
      */
@@ -82,7 +82,7 @@ public class FormUploadBuilder extends BaseUploadBuilder<FormUploadBuilder> {
     }
 
     /**
-     * 字节流类型
+     * 字节流类型（表单式）
      *
      * @return
      */
