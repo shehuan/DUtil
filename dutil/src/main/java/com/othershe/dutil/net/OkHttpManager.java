@@ -146,9 +146,8 @@ public class OkHttpManager {
                 .url(url)
                 .post(requestBody);
 
-        Headers.Builder headerBuilder;
         if (headers != null && headers.size() > 0) {
-            headerBuilder = new Headers.Builder();
+            Headers.Builder headerBuilder = new Headers.Builder();
 
             for (String key : headers.keySet()) {
                 headerBuilder.add(key, headers.get(key));

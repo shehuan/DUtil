@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ByteArrayOutputStream bs = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bs);
         DUtil.initFormUpload()
-                .url("http://192.168.1.233:8044/OA-serviceapp-datahandler/datahandler/photo/upload")
+                .url("http://192.168.1.xxxxx/OA-serviceapp-datahandler/datahandler/photo/upload")
                 .addParam("vcode", "31d13464e3c44cb495e992d61fcc759d")
                 .addParam("unique", "869271025990968")
                 .addByte("file", "BeautyImage.jpg", bs.toByteArray())
@@ -113,23 +113,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 });
 
-        DUtil.initFormUpload()
-                .url("http://192.168.1.233:8044/OA-serviceapp-datahandler/datahandler/photo/upload")
-                .addParam("vcode", "31d13464e3c44cb495e992d61fcc759d")
-                .addParam("unique", "869271025990968")
-                .addFile("file", "BeautyImage.jpg", new File(Environment.getExternalStorageDirectory() + "/DUtil/", "aaa.jpg"))
-                .fileUploadBuild()
-                .upload(new SimpleUploadCallback() {
-                    @Override
-                    public void onStart() {
-                        super.onStart();
-                    }
+//        DUtil.initFormUpload()
+//                .url("")
+//                .addParam("vcode", "31d13464e3c44cb495e992d61fcc759d")
+//                .addParam("unique", "869271025990968")
+//                .addFile("file", "BeautyImage.jpg", new File(Environment.getExternalStorageDirectory() + "/DUtil/", "aaa.jpg"))
+//                .fileUploadBuild()
+//                .upload(new SimpleUploadCallback() {
+//                    @Override
+//                    public void onStart() {
+//                        super.onStart();
+//                    }
+//
+//                    @Override
+//                    public void onFinish(String response) {
+//                        super.onFinish(response);
+//                    }
+//                });
 
-                    @Override
-                    public void onFinish(String response) {
-                        super.onFinish(response);
-                    }
-                });
+//        DUtil.initUpload()
+//                .url("")
+//                .addFile(new File(Environment.getExternalStorageDirectory() + "/DUtil/", "aaa.jpg"))
+//                .build()
+//                .upload(new SimpleUploadCallback() {
+//                });
     }
 
     @Override
