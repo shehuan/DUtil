@@ -1,7 +1,7 @@
 package com.othershe.dutil.upload;
 
-import com.othershe.dutil.Utils.Utils;
-import com.othershe.dutil.callback.UploadCallback;
+import android.os.Handler;
+import android.os.Message;
 
 import java.io.IOException;
 
@@ -13,14 +13,17 @@ import okio.ForwardingSink;
 import okio.Okio;
 import okio.Sink;
 
+import static com.othershe.dutil.data.Consts.ERROR;
+import static com.othershe.dutil.data.Consts.PROGRESS;
+
 public class ProgressRequestBody extends RequestBody {
     private RequestBody requestBody;
-    private UploadCallback callback;
+    private Handler handler;
     private CountingSink countingSink;
 
-    public ProgressRequestBody(RequestBody requestBody, UploadCallback callback) {
+    public ProgressRequestBody(RequestBody requestBody, Handler handler) {
         this.requestBody = requestBody;
-        this.callback = callback;
+        this.handler = handler;
     }
 
     @Override
@@ -41,9 +44,10 @@ public class ProgressRequestBody extends RequestBody {
             requestBody.writeTo(bufferedSink);
             bufferedSink.flush();
         } catch (Exception e) {
-            if (callback != null) {
-                callback.onError(e.toString());
-            }
+            Message message = Message.obtain();
+            message.what = ERROR;
+            message.obj = e.toString();
+            handler.sendMessage(message);
         }
     }
 
@@ -60,9 +64,11 @@ public class ProgressRequestBody extends RequestBody {
             super.write(source, byteCount);
 
             currentLength += byteCount;
-            if (callback != null) {
-                callback.onProgress(currentLength, contentLength(), Utils.getPercentage((int) currentLength, (int) contentLength()));
-            }
+            Message message = Message.obtain();
+            message.what = PROGRESS;
+            message.arg1 = (int) currentLength;
+            message.arg2 = (int) contentLength();
+            handler.sendMessage(message);
         }
     }
 }

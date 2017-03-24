@@ -21,7 +21,7 @@ public class DownloadManger {
 
     private Context context;
 
-    private Map<String, ProgressHandler> progressHandlerMap = new HashMap<>();//保存任务的进度处理对象
+    private Map<String, DownloadProgressHandler> progressHandlerMap = new HashMap<>();//保存任务的进度处理对象
     private Map<String, DownloadData> downloadDataMap = new HashMap<>();//保存任务数据
     private Map<String, DownloadCallback> callbackMap = new HashMap<>();//保存任务回调
     private Map<String, FileTask> fileTaskMap = new HashMap<>();//保存下载线程
@@ -165,14 +165,14 @@ public class DownloadManger {
             downloadData.setChildTaskCount(1);
         }
 
-        ProgressHandler progressHandler = new ProgressHandler(context, downloadData, downloadCallback);
-        FileTask fileTask = new FileTask(context, downloadData, progressHandler.getHandler());
-        progressHandler.setFileTask(fileTask);
+        DownloadProgressHandler downloadProgressHandler = new DownloadProgressHandler(context, downloadData, downloadCallback);
+        FileTask fileTask = new FileTask(context, downloadData, downloadProgressHandler.getHandler());
+        downloadProgressHandler.setFileTask(fileTask);
 
         downloadDataMap.put(downloadData.getUrl(), downloadData);
         callbackMap.put(downloadData.getUrl(), downloadCallback);
         fileTaskMap.put(downloadData.getUrl(), fileTask);
-        progressHandlerMap.put(downloadData.getUrl(), progressHandler);
+        progressHandlerMap.put(downloadData.getUrl(), downloadProgressHandler);
 
         ThreadPool.getInstance().getThreadPoolExecutor().execute(fileTask);
 

@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
-import com.othershe.dutil.Utils.Utils;
+import com.othershe.dutil.utils.Utils;
 import com.othershe.dutil.callback.DownloadCallback;
 import com.othershe.dutil.data.DownloadData;
 import com.othershe.dutil.db.Db;
@@ -21,7 +21,7 @@ import static com.othershe.dutil.data.Consts.PAUSE;
 import static com.othershe.dutil.data.Consts.PROGRESS;
 import static com.othershe.dutil.data.Consts.START;
 
-public class ProgressHandler {
+public class DownloadProgressHandler {
     private String url;
     private String path;
     private String name;
@@ -160,7 +160,7 @@ public class ProgressHandler {
         }
     };
 
-    public ProgressHandler(Context context, DownloadData downloadData, DownloadCallback downloadCallback) {
+    public DownloadProgressHandler(Context context, DownloadData downloadData, DownloadCallback downloadCallback) {
         this.context = context;
         this.downloadCallback = downloadCallback;
 

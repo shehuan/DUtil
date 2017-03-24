@@ -1,4 +1,4 @@
-package com.othershe.dutil.Utils;
+package com.othershe.dutil.utils;
 
 import android.text.TextUtils;
 

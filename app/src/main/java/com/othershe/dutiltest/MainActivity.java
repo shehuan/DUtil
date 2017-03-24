@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ByteArrayOutputStream bs = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bs);
         DUtil.initFormUpload()
-                .url("http://eds.awizdata.com/OA-serviceapp-datahandler/datahandler/photo/upload")
+                .url("http://192.168.1.233:8044/OA-serviceapp-datahandler/datahandler/photo/upload")
                 .addParam("vcode", "31d13464e3c44cb495e992d61fcc759d")
                 .addParam("unique", "869271025990968")
                 .addByte("file", "BeautyImage.jpg", bs.toByteArray())
@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onFinish(String response) {
                         Log.e("upload", "finish###" + response);
-//                                Toast.makeText(MainActivity.this, "dddddddd", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "finish", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override

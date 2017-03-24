@@ -32,27 +32,27 @@ public class UploadRequest {
             callback.onStart();
         }
 
-        type = TextUtils.isEmpty(type) ? "application/octet-stream" : type;
-
-        RequestBody fileBody = RequestBody.create(MediaType.parse(type), file);
-        ProgressRequestBody progressRequestBody = new ProgressRequestBody(fileBody, callback);
-
-        OkHttpManager.getInstance().initRequest(url, progressRequestBody, new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                if (callback != null){
-                    callback.onError(e.toString());
-                }
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if (response != null && response.isSuccessful()) {
-                    if (callback != null) {
-                        callback.onFinish(response.body().string());
-                    }
-                }
-            }
-        });
+//        type = TextUtils.isEmpty(type) ? "application/octet-stream" : type;
+//
+//        RequestBody fileBody = RequestBody.create(MediaType.parse(type), file);
+//        ProgressRequestBody progressRequestBody = new ProgressRequestBody(fileBody, callback);
+//
+//        OkHttpManager.getInstance().initRequest(url, progressRequestBody, new Callback() {
+//            @Override
+//            public void onFailure(Call call, IOException e) {
+//                if (callback != null){
+//                    callback.onError(e.toString());
+//                }
+//            }
+//
+//            @Override
+//            public void onResponse(Call call, Response response) throws IOException {
+//                if (response != null && response.isSuccessful()) {
+//                    if (callback != null) {
+//                        callback.onFinish(response.body().string());
+//                    }
+//                }
+//            }
+//        });
     }
 }

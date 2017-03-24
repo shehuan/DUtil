@@ -17,6 +17,8 @@ public interface UploadCallback extends FileCallback {
 
     /**
      * 完成
+     *
+     * @param response 响应data
      */
     void onFinish(String response);
 

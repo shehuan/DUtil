@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
-import com.othershe.dutil.Utils.Utils;
+import com.othershe.dutil.utils.Utils;
 import com.othershe.dutil.data.DownloadData;
 import com.othershe.dutil.data.Ranges;
 import com.othershe.dutil.db.Db;

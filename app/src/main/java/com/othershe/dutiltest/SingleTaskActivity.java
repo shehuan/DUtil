@@ -11,7 +11,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.othershe.dutil.DUtil;
-import com.othershe.dutil.Utils.Utils;
+import com.othershe.dutil.utils.Utils;
 import com.othershe.dutil.callback.DownloadCallback;
 import com.othershe.dutil.download.DownloadManger;
 

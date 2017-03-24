@@ -1,6 +1,6 @@
 package com.othershe.dutil.upload;
 
-import com.othershe.dutil.Utils.Utils;
+import com.othershe.dutil.utils.Utils;
 import com.othershe.dutil.data.UploadFile;
 
 import java.util.List;

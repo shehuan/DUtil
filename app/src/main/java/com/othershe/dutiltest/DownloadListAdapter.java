@@ -5,10 +5,10 @@ import android.widget.ProgressBar;
 
 import com.othershe.baseadapter.ViewHolder;
 import com.othershe.baseadapter.base.CommonBaseAdapter;
-import com.othershe.dutil.Utils.Utils;
 import com.othershe.dutil.callback.DownloadCallback;
 import com.othershe.dutil.data.DownloadData;
 import com.othershe.dutil.download.DownloadManger;
+import com.othershe.dutil.utils.Utils;
 
 import java.io.File;
 import java.util.List;
