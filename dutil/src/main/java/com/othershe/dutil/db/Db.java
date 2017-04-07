@@ -10,6 +10,8 @@ import com.othershe.dutil.data.DownloadData;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.othershe.dutil.data.Consts.PROGRESS;
+
 public class Db {
     /**
      * 数据库名
@@ -55,6 +57,7 @@ public class Db {
         values.put("current_length", data.getCurrentLength());
         values.put("total_length", data.getTotalLength());
         values.put("percentage", data.getPercentage());
+        values.put("status", data.getStatus());
         values.put("last_modify", data.getLastModify());
         values.put("date", data.getDate());
         sqldb.insert(TABLE_NAME_DOWNLOAD, null, values);
@@ -87,6 +90,7 @@ public class Db {
         data.setCurrentLength(cursor.getInt(cursor.getColumnIndex("current_length")));
         data.setTotalLength(cursor.getInt(cursor.getColumnIndex("total_length")));
         data.setPercentage(cursor.getFloat(cursor.getColumnIndex("percentage")));
+        data.setStatus(cursor.getInt(cursor.getColumnIndex("status")));
         data.setLastModify(cursor.getString(cursor.getColumnIndex("last_modify")));
         data.setDate(cursor.getInt(cursor.getColumnIndex("date")));
 
@@ -113,6 +117,7 @@ public class Db {
                 data.setCurrentLength(cursor.getInt(cursor.getColumnIndex("current_length")));
                 data.setTotalLength(cursor.getInt(cursor.getColumnIndex("total_length")));
                 data.setPercentage(cursor.getFloat(cursor.getColumnIndex("percentage")));
+                data.setStatus(cursor.getInt(cursor.getColumnIndex("status")));
                 data.setLastModify(cursor.getString(cursor.getColumnIndex("last_modify")));
                 data.setDate(cursor.getInt(cursor.getColumnIndex("date")));
 
@@ -126,10 +131,13 @@ public class Db {
     /**
      * 更新下载信息
      */
-    public void updateData(int currentSize, float percentage, String url) {
+    public void updateProgress(int currentSize, float percentage, int status, String url) {
         ContentValues values = new ContentValues();
-        values.put("current_length", currentSize);
-        values.put("percentage", percentage);
+        if (status != PROGRESS){
+            values.put("current_length", currentSize);
+            values.put("percentage", percentage);
+        }
+        values.put("status", status);
         sqldb.update(TABLE_NAME_DOWNLOAD, values, "url = ?", new String[]{url});
     }
 

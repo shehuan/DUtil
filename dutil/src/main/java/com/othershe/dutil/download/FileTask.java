@@ -74,7 +74,7 @@ public class FileTask implements Runnable {
             File saveFile = new File(path, name);
             File tempFile = new File(path, name + ".temp");
             DownloadData data = Db.getInstance(context).getData(url);
-            if (Utils.isFileExists(saveFile) && Utils.isFileExists(tempFile) && data != null) {
+            if (Utils.isFileExists(saveFile) && Utils.isFileExists(tempFile) && data != null && data.getStatus() != PROGRESS) {
                 Response response = OkHttpManager.getInstance().initRequest(url, data.getLastModify());
                 if (response != null && response.isSuccessful() && Utils.isNotServerFileChanged(response)) {
                     TEMP_FILE_TOTAL_SIZE = EACH_TEMP_SIZE * data.getChildTaskCount();
@@ -163,6 +163,8 @@ public class FileTask implements Runnable {
         final Ranges range = readDownloadRange(tempFile);
 
         callList = new ArrayList<>();
+
+        Db.getInstance(context).updateProgress(0, 0, PROGRESS, url);
 
         for (int i = 0; i < childTaskCount; i++) {
             final int tempI = i;

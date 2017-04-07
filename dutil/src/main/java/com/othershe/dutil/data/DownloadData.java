@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import static com.othershe.dutil.data.Consts.NONE;
+import static com.othershe.dutil.data.Consts.START;
 
 public class DownloadData implements Parcelable {
 
@@ -13,7 +14,7 @@ public class DownloadData implements Parcelable {
     private int currentLength;
     private int totalLength;
     private float percentage;
-    private int state = NONE;
+    private int status = NONE;
     private int childTaskCount;
     private long date;
     private String lastModify;
@@ -40,6 +41,7 @@ public class DownloadData implements Parcelable {
         this.path = path;
         this.childTaskCount = childTaskCount;
         this.currentLength = currentLength;
+        this.status = START;
         this.name = name;
         this.totalLength = totalLength;
         this.lastModify = lastModify;
@@ -94,12 +96,12 @@ public class DownloadData implements Parcelable {
         this.percentage = percentage;
     }
 
-    public int getState() {
-        return state;
+    public int getStatus() {
+        return status;
     }
 
-    public void setState(int state) {
-        this.state = state;
+    public void setStatus(int status) {
+        this.status = status;
     }
 
     public int getChildTaskCount() {
@@ -139,7 +141,7 @@ public class DownloadData implements Parcelable {
         dest.writeInt(this.currentLength);
         dest.writeInt(this.totalLength);
         dest.writeFloat(this.percentage);
-        dest.writeInt(this.state);
+        dest.writeInt(this.status);
         dest.writeInt(this.childTaskCount);
         dest.writeLong(this.date);
         dest.writeString(this.lastModify);
@@ -152,7 +154,7 @@ public class DownloadData implements Parcelable {
         this.currentLength = in.readInt();
         this.totalLength = in.readInt();
         this.percentage = in.readFloat();
-        this.state = in.readInt();
+        this.status = in.readInt();
         this.childTaskCount = in.readInt();
         this.date = in.readLong();
         this.lastModify = in.readString();

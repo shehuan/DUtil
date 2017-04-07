@@ -58,7 +58,7 @@ public class DownloadProgressHandler {
 
             int mLastSate = mCurrentState;
             mCurrentState = msg.what;
-            downloadData.setState(mCurrentState);
+            downloadData.setStatus(mCurrentState);
 
             switch (mCurrentState) {
                 case START:
@@ -121,7 +121,7 @@ public class DownloadProgressHandler {
                 case PAUSE:
                     synchronized (this) {
                         if (isSupportRange) {
-                            Db.getInstance(context).updateData(currentLength, Utils.getPercentage(currentLength, totalLength), url);
+                            Db.getInstance(context).updateProgress(currentLength, Utils.getPercentage(currentLength, totalLength), PAUSE, url);
                         }
                         tempChildTaskCount++;
                         if (tempChildTaskCount == childTaskCount) {
@@ -144,13 +144,13 @@ public class DownloadProgressHandler {
                 case DESTROY:
                     synchronized (this) {
                         if (isSupportRange) {
-                            Db.getInstance(context).updateData(currentLength, Utils.getPercentage(currentLength, totalLength), url);
+                            Db.getInstance(context).updateProgress(currentLength, Utils.getPercentage(currentLength, totalLength), DESTROY, url);
                         }
                     }
                     break;
                 case ERROR:
                     if (isSupportRange) {
-                        Db.getInstance(context).updateData(currentLength, Utils.getPercentage(currentLength, totalLength), url);
+                        Db.getInstance(context).updateProgress(currentLength, Utils.getPercentage(currentLength, totalLength), ERROR, url);
                     }
                     if (downloadCallback != null) {
                         downloadCallback.onError((String) msg.obj);
