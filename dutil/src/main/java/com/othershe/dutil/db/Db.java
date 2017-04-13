@@ -21,7 +21,7 @@ public class Db {
     /**
      * 数据库版本
      */
-    private static final int VERSION = 1;
+    private static final int VERSION = 2;
 
     private String TABLE_NAME_DOWNLOAD = "download_info";
 
