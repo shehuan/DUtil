@@ -58,7 +58,7 @@ public class DownloadManger {
         }
     }
 
-    public void init(String url, String path, String name, int childTaskCount) {
+    public synchronized void init(String url, String path, String name, int childTaskCount) {
         downloadData = new DownloadData();
         downloadData.setUrl(url);
         downloadData.setPath(path);
@@ -105,7 +105,7 @@ public class DownloadManger {
      * @param downloadData
      * @param downloadCallback
      */
-    public void setOnDownloadCallback(DownloadData downloadData, DownloadCallback downloadCallback) {
+    public synchronized void setOnDownloadCallback(DownloadData downloadData, DownloadCallback downloadCallback) {
         downloadDataMap.put(downloadData.getUrl(), downloadData);
         callbackMap.put(downloadData.getUrl(), downloadCallback);
     }
@@ -154,7 +154,7 @@ public class DownloadManger {
     /**
      * 执行下载任务
      */
-    private void execute(DownloadData downloadData, DownloadCallback downloadCallback) {
+    private synchronized void execute(DownloadData downloadData, DownloadCallback downloadCallback) {
         //防止同一个任务多次下载
         if (progressHandlerMap.get(downloadData.getUrl()) != null) {
             return;

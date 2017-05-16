@@ -11,7 +11,7 @@ public class DBuilder {
     private Context context;
 
     public DBuilder(Context context) {
-        this.context = context;
+        this.context = context.getApplicationContext();
     }
 
     public DBuilder() {
